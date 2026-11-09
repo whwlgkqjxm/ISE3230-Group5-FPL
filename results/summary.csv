@@ -1,0 +1,6 @@
+strategy,total_points,avg_per_GW,transfers,hits,captain_pts,solve_time_s
+no_transfers,1458,38.4,0,0,155,14.3
+crowd,1932,50.8,40,0,159,3.6
+myopic_H1,1904,50.1,49,8,181,3.1
+milp_H3,2009,52.9,54,13,203,21.0
+perfect_H3,4852,127.7,245,204,653,8.6
