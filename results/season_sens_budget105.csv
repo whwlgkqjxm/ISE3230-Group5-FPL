@@ -1,0 +1,39 @@
+GW,points,total,hits,transfers,free_transfers,captain,captain_pts,bank,squad_value,expected,buys,sells,n_vars,n_constrs,solve_time
+1,50,50,0,0,0,Mohamed Salah,8,0.0,105.0,62.0,,,10362,10469,0.427
+2,48,98,1,2,1,Mohamed Salah,5,0.3,104.5,64.1,"Antoine Semenyo, Hugo Ekitiké","Yoane Wissa, Florian Wirtz",10587,10692,0.65
+3,44,142,2,3,1,Mohamed Salah,3,4.2,100.4,68.7,"Riccardo Calafiori, Jurriën Timber, Brennan Johnson","Cole Palmer, Jeremie Frimpong, Joško Gvardiol",10692,10797,0.493
+4,69,211,0,1,1,Mohamed Salah,9,4.3,100.4,67.6,João Pedro Junqueira de Jesus,Jarrod Bowen,11112,11217,0.521
+5,40,251,0,1,1,Mohamed Salah,5,5.6,99.1,68.1,Enzo Fernández,Bryan Mbeumo,11127,11232,1.18
+6,34,285,0,1,1,Mohamed Salah,2,5.8,98.8,66.0,Trevoh Chalobah,Nikola Milenković,11142,11247,3.087
+7,66,351,0,1,1,Erling Haaland,8,-0.0,104.4,67.2,Erling Haaland,Hugo Ekitiké,11157,11262,0.698
+8,61,412,0,1,1,Erling Haaland,13,0.3,103.8,65.6,Ismaïla Sarr,Brennan Johnson,11187,11292,1.352
+9,40,452,1,2,1,Erling Haaland,2,0.5,103.6,65.0,"Gabriel dos Santos Magalhães, Danny Welbeck","Riccardo Calafiori, Chris Wood",11202,11307,1.594
+10,90,542,0,1,1,Erling Haaland,13,0.7,103.3,65.0,Bruno Guimarães Rodriguez Moura,Enzo Fernández,11217,11322,1.275
+11,31,573,0,1,1,Erling Haaland,4,0.4,103.9,66.3,Jarrod Bowen,João Pedro Junqueira de Jesus,11292,11397,1.729
+12,54,627,0,1,1,Erling Haaland,2,0.2,104.0,64.2,Matheus Nunes,Trevoh Chalobah,11337,11442,0.697
+13,14,641,2,3,1,Erling Haaland,2,0.2,103.8,63.4,"Leandro Trossard, Daniel Muñoz Mejía, Eberechi Eze","Gabriel dos Santos Magalhães, Antoine Semenyo, Ismaïla Sarr",11337,11442,0.771
+14,70,711,0,1,1,Bryan Mbeumo,2,5.7,98.4,56.9,Bryan Mbeumo,Mohamed Salah,11382,11487,0.535
+15,69,780,0,1,1,Daniel Muñoz Mejía,0,4.2,99.9,58.9,Phil Foden,Leandro Trossard,11397,11502,0.351
+16,87,867,0,5,5,Phil Foden,11,4.5,99.5,65.1,"Trevoh Chalobah, Kiernan Dewsbury-Hall, Maxence Lacroix, Harry Wilson, Bruno Borges Fernandes","Jurriën Timber, Bryan Mbeumo, Eberechi Eze, Justin Devenny, Aaron Wan-Bissaka",11412,11517,0.272
+17,56,923,0,1,1,Phil Foden,3,4.1,100.2,67.6,Morgan Rogers,Bruno Guimarães Rodriguez Moura,11562,11667,0.54
+18,30,953,0,1,1,Morgan Rogers,1,1.1,103.4,68.6,Matheus Santos Carneiro da Cunha,Kiernan Dewsbury-Hall,11637,11742,0.489
+19,45,998,0,1,1,Phil Foden,3,1.6,102.8,65.0,Dominic Calvert-Lewin,Danny Welbeck,11712,11817,0.329
+20,38,1036,0,1,1,Erling Haaland,2,1.8,102.8,64.8,James Tarkowski,Daniel Muñoz Mejía,11862,11967,0.456
+21,42,1078,0,1,1,Florian Wirtz,3,2.7,101.9,61.1,Florian Wirtz,Bruno Borges Fernandes,11937,12042,0.321
+22,47,1125,1,2,1,Kevin Schade,1,4.0,100.6,63.5,"Nathan Collins, Kevin Schade","Marc Guéhi, Phil Foden",11997,12102,0.29
+23,45,1170,0,1,1,Florian Wirtz,2,2.5,102.3,61.5,Gabriel dos Santos Magalhães,Matheus Nunes,12057,12162,0.582
+24,45,1215,1,2,1,Bryan Mbeumo,2,7.4,97.4,63.2,"Ollie Watkins, Bryan Mbeumo","Morgan Rogers, Erling Haaland",12177,12282,0.43
+25,53,1268,1,2,1,Bruno Borges Fernandes,10,3.4,101.3,63.4,"Jurriën Timber, Bruno Borges Fernandes","Kevin Schade, Maxence Lacroix",12267,12372,0.53
+26,42,1310,0,1,1,Gabriel dos Santos Magalhães,7,2.3,102.7,78.2,William Saliba,Nathan Collins,12267,12372,0.619
+27,39,1349,1,2,1,Cole Palmer,3,0.6,104.0,63.1,"Cole Palmer, João Pedro Junqueira de Jesus","Ollie Watkins, Matheus Santos Carneiro da Cunha",12282,12387,0.937
+28,67,1416,0,1,1,Cole Palmer,1,0.2,104.4,63.7,Virgil van Dijk,James Tarkowski,12297,12402,0.863
+29,85,1501,0,1,1,Cole Palmer,9,0.4,103.8,63.8,Matheus Santos Carneiro da Cunha,Florian Wirtz,12312,12417,0.951
+30,48,1549,0,1,1,João Pedro Junqueira de Jesus,2,2.4,102.1,63.5,Aaron Wan-Bissaka,William Saliba,12342,12447,0.807
+31,52,1601,0,1,1,Cole Palmer,2,4.3,100.0,59.8,Jan Paul van Hecke,Jurriën Timber,12387,12492,0.661
+32,47,1648,1,2,1,Bruno Borges Fernandes,4,4.0,100.5,61.8,"Antoine Semenyo, Danny Welbeck","Bryan Mbeumo, Dominic Calvert-Lewin",12402,12507,0.357
+33,71,1719,0,1,1,Danny Welbeck,8,4.3,100.2,92.5,Nico O'Reilly,Trevoh Chalobah,12447,12552,0.353
+34,41,1760,3,4,1,Bruno Borges Fernandes,5,7.6,97.0,63.3,"Maxence Lacroix, Jean-Philippe Mateta, Norberto Bercique Gomes Betuncal, Morgan Gibbs-White","Danny Welbeck, Cole Palmer, João Pedro Junqueira de Jesus, Aaron Wan-Bissaka",12462,12567,0.524
+35,26,1786,1,2,1,Morgan Gibbs-White,4,1.0,103.6,62.5,"Ismaïla Sarr, Mohamed Salah","Harry Wilson, Matheus Santos Carneiro da Cunha",12492,12597,0.53
+36,76,1862,1,2,1,Jérémy Doku,12,7.9,96.6,83.7,"Jérémy Doku, Matz Sels","Mohamed Salah, Martin Dúbravka",12582,12687,0.614
+37,77,1939,0,1,1,Ollie Watkins,15,6.8,97.8,58.2,Ollie Watkins,Jean-Philippe Mateta,8408,8478,0.211
+38,71,2010,0,1,1,Ollie Watkins,13,4.8,99.7,60.8,Bukayo Saka,Antoine Semenyo,4209,4244,0.095

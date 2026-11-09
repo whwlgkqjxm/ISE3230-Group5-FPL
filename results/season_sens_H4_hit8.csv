@@ -1,0 +1,39 @@
+GW,points,total,hits,transfers,free_transfers,captain,captain_pts,bank,squad_value,expected,buys,sells,n_vars,n_constrs,solve_time
+1,56,56,0,0,0,Mohamed Salah,8,0.0,100.0,60.6,,,13816,13958,0.578
+2,28,84,0,1,1,Mohamed Salah,5,2.0,97.8,61.1,Rodrigo Muniz Carvalho,Yoane Wissa,14116,14256,0.827
+3,36,120,1,2,1,Mohamed Salah,3,2.6,97.1,63.4,"Riccardo Calafiori, Jurriën Timber","Jeremie Frimpong, Joško Gvardiol",14256,14396,0.761
+4,58,178,0,1,1,Mohamed Salah,9,1.4,98.3,62.8,Trevoh Chalobah,Axel Tuanzebe,14816,14956,0.737
+5,46,224,0,1,1,Mohamed Salah,5,0.9,98.6,64.3,Jordan Pickford,Matz Sels,14836,14976,0.819
+6,35,259,0,1,1,Mohamed Salah,2,0.2,99.2,63.7,Marc Guéhi,Álex Moreno Lopera,14856,14996,0.98
+7,59,318,0,0,1,Mohamed Salah,2,0.2,99.2,60.4,,,14876,15016,1.941
+8,67,385,0,2,2,Erling Haaland,13,0.6,98.5,62.0,"Enzo Fernández, Erling Haaland","Mohamed Salah, Chris Wood",14916,15056,1.364
+9,49,434,0,1,1,Erling Haaland,2,0.8,98.5,61.9,Ismaïla Sarr,Enzo Fernández,14936,15076,1.218
+10,73,507,0,1,1,Erling Haaland,13,0.0,99.3,62.7,Gabriel dos Santos Magalhães,Riccardo Calafiori,14956,15096,1.368
+11,33,540,0,1,1,Erling Haaland,4,1.2,98.2,65.0,Declan Rice,Florian Wirtz,15056,15196,0.839
+12,46,586,0,1,1,Erling Haaland,2,1.1,98.5,63.8,Matheus Nunes,Nikola Milenković,15116,15256,0.79
+13,28,614,0,1,1,Bryan Mbeumo,1,0.1,99.3,58.1,Daniel Muñoz Mejía,Marc Guéhi,15116,15256,1.266
+14,58,672,0,1,1,Bryan Mbeumo,2,0.3,99.0,55.7,Pedro Lomba Neto,Antoine Semenyo,15176,15316,1.062
+15,66,738,0,1,1,Daniel Muñoz Mejía,0,0.0,99.3,56.3,Bruno Guimarães Rodriguez Moura,Ismaïla Sarr,15196,15336,0.993
+16,76,814,0,5,5,Phil Foden,11,2.3,96.9,63.5,"Kiernan Dewsbury-Hall, Maxence Lacroix, Marc Guéhi, Harry Wilson, Phil Foden","Gabriel dos Santos Magalhães, Jurriën Timber, Bryan Mbeumo, Pedro Lomba Neto, Justin Devenny",15216,15356,0.712
+17,41,855,0,1,1,Phil Foden,3,3.2,96.2,64.6,Malo Gusto,Daniel Muñoz Mejía,15416,15556,1.184
+18,30,885,0,1,1,Morgan Rogers,1,2.9,96.7,64.8,Morgan Rogers,Declan Rice,15516,15656,1.569
+19,53,938,0,1,1,Phil Foden,3,2.4,97.2,63.6,Dominic Calvert-Lewin,Rodrigo Muniz Carvalho,15616,15756,1.055
+20,39,977,0,1,1,Erling Haaland,2,1.9,97.9,64.4,James Tarkowski,Maxence Lacroix,15816,15956,1.08
+21,57,1034,0,1,1,Florian Wirtz,3,2.4,97.4,60.2,Florian Wirtz,Phil Foden,15916,16056,0.86
+22,52,1086,0,1,1,Nathan Collins,1,2.6,97.4,61.5,Nathan Collins,Marc Guéhi,15996,16136,1.052
+23,50,1136,0,1,1,Florian Wirtz,2,1.1,98.9,60.1,Gabriel dos Santos Magalhães,Matheus Nunes,16076,16216,1.173
+24,42,1178,1,2,1,Bryan Mbeumo,2,3.6,96.5,59.6,"Ollie Watkins, Bryan Mbeumo","Kiernan Dewsbury-Hall, Erling Haaland",16236,16376,1.072
+25,60,1238,0,1,1,Bruno Borges Fernandes,10,0.8,99.1,60.8,Bruno Borges Fernandes,Bruno Guimarães Rodriguez Moura,16356,16496,1.223
+26,41,1279,0,1,1,Gabriel dos Santos Magalhães,7,0.4,99.7,72.9,William Saliba,James Tarkowski,16356,16496,0.817
+27,44,1323,0,1,1,Bryan Mbeumo,6,1.3,98.6,60.1,João Pedro Junqueira de Jesus,Ollie Watkins,16376,16516,1.343
+28,57,1380,1,2,1,Cole Palmer,1,0.3,99.7,62.7,"Cole Palmer, Aaron Wan-Bissaka","Trevoh Chalobah, Florian Wirtz",16396,16536,2.217
+29,78,1458,0,1,1,Cole Palmer,9,0.3,99.3,62.9,Virgil van Dijk,William Saliba,16416,16556,1.068
+30,49,1507,0,1,1,João Pedro Junqueira de Jesus,2,1.0,98.8,61.8,James Hill,Nathan Collins,16456,16596,1.118
+31,42,1549,0,1,1,Cole Palmer,2,1.5,98.3,59.4,Jan Paul van Hecke,Malo Gusto,16516,16656,0.965
+32,51,1600,0,1,1,Bruno Borges Fernandes,4,0.6,99.3,61.1,Antoine Semenyo,Morgan Rogers,16536,16676,0.405
+33,60,1660,0,0,1,João Pedro Junqueira de Jesus,0,0.6,99.2,83.2,,,16596,16736,0.907
+34,50,1710,1,3,2,Bruno Borges Fernandes,5,5.4,94.4,58.6,"Maxence Lacroix, Norberto Bercique Gomes Betuncal, Morgan Gibbs-White","James Hill, Cole Palmer, João Pedro Junqueira de Jesus",16616,16756,1.029
+35,32,1742,0,1,1,Morgan Gibbs-White,4,7.5,92.5,59.1,Ismaïla Sarr,Bryan Mbeumo,16656,16796,1.371
+36,83,1825,0,1,1,Jérémy Doku,12,6.6,93.2,74.6,Jérémy Doku,Harry Wilson,12582,12687,0.477
+37,76,1901,0,1,1,Ollie Watkins,15,3.7,96.2,56.1,Ollie Watkins,Dominic Calvert-Lewin,8408,8478,0.196
+38,70,1971,0,1,1,Ollie Watkins,13,1.5,98.4,59.6,David Raya Martín,Martin Dúbravka,4209,4244,0.084

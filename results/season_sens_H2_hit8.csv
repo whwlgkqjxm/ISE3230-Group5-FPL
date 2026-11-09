@@ -1,0 +1,39 @@
+GW,points,total,hits,transfers,free_transfers,captain,captain_pts,bank,squad_value,expected,buys,sells,n_vars,n_constrs,solve_time
+1,56,56,0,0,0,Mohamed Salah,8,0.0,100.0,60.6,,,6908,6980,0.181
+2,28,84,0,1,1,Mohamed Salah,5,2.0,97.8,61.1,Rodrigo Muniz Carvalho,Yoane Wissa,7058,7128,0.219
+3,38,122,0,1,1,Mohamed Salah,3,0.4,99.3,59.9,Jurriën Timber,Axel Tuanzebe,7128,7198,0.188
+4,54,176,0,1,1,Mohamed Salah,9,1.1,98.6,60.8,Trevoh Chalobah,Joško Gvardiol,7408,7478,0.162
+5,54,230,0,1,1,Mohamed Salah,5,0.4,99.1,62.6,Marc Guéhi,Álex Moreno Lopera,7418,7488,0.233
+6,35,265,0,1,1,Mohamed Salah,2,0.4,99.0,63.1,Nick Pope,Matz Sels,7428,7498,0.24
+7,66,331,0,1,1,Mohamed Salah,2,0.1,99.3,61.6,Gabriel dos Santos Magalhães,Jeremie Frimpong,7438,7508,0.28
+8,53,384,0,1,1,Antoine Semenyo,4,1.5,97.6,61.3,Enzo Fernández,Florian Wirtz,7458,7528,0.301
+9,50,434,1,2,1,Erling Haaland,2,0.0,99.2,65.7,"Ismaïla Sarr, Erling Haaland","Rodrigo Muniz Carvalho, Mohamed Salah",7468,7538,0.343
+10,74,508,0,1,1,Erling Haaland,13,0.8,98.4,65.5,Danny Welbeck,Chris Wood,7478,7548,0.237
+11,35,543,0,1,1,Erling Haaland,4,0.7,98.7,67.5,Declan Rice,Enzo Fernández,7528,7598,0.225
+12,46,589,0,1,1,Erling Haaland,2,0.6,99.0,65.6,Matheus Nunes,Nikola Milenković,7558,7628,0.249
+13,32,621,0,1,1,Bryan Mbeumo,1,1.4,98.2,58.7,Bruno Guimarães Rodriguez Moura,Antoine Semenyo,7558,7628,0.234
+14,54,675,0,1,1,Bryan Mbeumo,2,1.4,98.1,56.0,Emiliano Martínez Romero,Nick Pope,7588,7658,0.271
+15,73,748,0,1,1,Erling Haaland,2,2.7,96.7,54.5,Harry Wilson,Ismaïla Sarr,7598,7668,0.322
+16,86,834,0,5,5,Phil Foden,11,0.1,99.4,64.8,"Kiernan Dewsbury-Hall, Dean Henderson, Maxence Lacroix, Phil Foden, Bruno Borges Fernandes","Gabriel dos Santos Magalhães, Declan Rice, Emiliano Martínez Romero, Bryan Mbeumo, Justin Devenny",7608,7678,0.208
+17,39,873,0,1,1,Phil Foden,3,1.1,98.8,66.5,Malo Gusto,Jurriën Timber,7708,7778,0.253
+18,26,899,0,1,1,Morgan Rogers,1,0.6,99.5,65.6,Morgan Rogers,Bruno Guimarães Rodriguez Moura,7758,7828,0.285
+19,37,936,0,1,1,Phil Foden,3,1.1,98.8,62.8,Dominic Calvert-Lewin,Danny Welbeck,7808,7878,0.244
+20,42,978,0,1,1,Erling Haaland,2,2.0,98.1,62.4,Florian Wirtz,Bruno Borges Fernandes,7908,7978,0.244
+21,57,1035,0,1,1,Florian Wirtz,3,2.2,97.9,59.5,Nathan Collins,Maxence Lacroix,7958,8028,0.261
+22,34,1069,0,1,1,Kevin Schade,1,0.0,100.2,61.1,Kevin Schade,Kiernan Dewsbury-Hall,7998,8068,0.267
+23,50,1119,0,1,1,Florian Wirtz,2,0.0,99.8,56.5,Keane Lewis-Potter,Malo Gusto,8038,8108,0.402
+24,37,1156,0,1,1,Bryan Mbeumo,2,0.0,99.5,55.4,Bryan Mbeumo,Phil Foden,8118,8188,0.236
+25,67,1223,0,1,1,Florian Wirtz,2,1.8,97.5,54.2,Martín Zubimendi Ibáñez,Kevin Schade,8178,8248,0.355
+26,54,1277,0,1,1,Gabriel dos Santos Magalhães,7,0.0,99.5,69.4,Gabriel dos Santos Magalhães,Matheus Nunes,8178,8248,0.276
+27,57,1334,0,1,1,Bryan Mbeumo,6,7.0,92.2,57.6,João Pedro Junqueira de Jesus,Erling Haaland,8188,8258,0.266
+28,48,1382,0,1,1,Cole Palmer,1,4.7,94.5,61.0,Cole Palmer,Florian Wirtz,8198,8268,0.238
+29,64,1446,0,1,1,Cole Palmer,9,3.5,95.3,62.2,Virgil van Dijk,Nathan Collins,8208,8278,0.17
+30,48,1494,0,1,1,João Pedro Junqueira de Jesus,2,0.8,98.1,61.4,Bruno Borges Fernandes,Morgan Rogers,8228,8298,0.336
+31,45,1539,0,1,1,Cole Palmer,2,1.6,97.3,56.0,Mads Hermansen,Dean Henderson,8258,8328,0.314
+32,68,1607,0,1,1,Bruno Borges Fernandes,4,1.0,97.9,59.3,Danny Welbeck,Dominic Calvert-Lewin,8268,8338,0.28
+33,65,1672,0,1,1,Danny Welbeck,8,1.1,97.5,88.5,Nico O'Reilly,Trevoh Chalobah,8298,8368,0.187
+34,58,1730,0,1,1,Bruno Borges Fernandes,5,4.1,94.5,52.3,Morgan Gibbs-White,Cole Palmer,8308,8378,0.243
+35,38,1768,0,1,1,Morgan Gibbs-White,4,3.8,94.7,59.4,Maxence Lacroix,Keane Lewis-Potter,8328,8398,0.177
+36,71,1839,0,1,1,Jérémy Doku,12,2.3,96.1,79.7,Jérémy Doku,Martín Zubimendi Ibáñez,8388,8458,0.167
+37,81,1920,0,1,1,Ollie Watkins,15,1.1,97.4,57.3,Ollie Watkins,João Pedro Junqueira de Jesus,8408,8478,0.244
+38,83,2003,0,1,1,Ollie Watkins,13,1.8,96.7,60.9,William Osula,Danny Welbeck,4209,4244,0.096
