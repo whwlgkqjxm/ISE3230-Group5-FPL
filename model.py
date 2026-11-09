@@ -44,7 +44,8 @@ AFCON_GW = 16          # free transfers topped up to 5 in GW16 (2025/26 rule)
 
 
 def solve(t, P, G, xp, cost, sell, pos, club, squad0, bank0, ft0,
-          hit_cost=HIT_COST, bench_w=0.1, discount=0.9, time_limit=60, verbose=False):
+          hit_cost=HIT_COST, bench_w=0.1, discount=0.9, max_transfers=None,
+          time_limit=60, verbose=False):
     """Build and solve the MILP for the deadline of GW t. Returns the GW-t decisions."""
     first_gw = len(squad0) == 0          # GW1: squad picked from scratch, no transfer rules
     m = gp.Model(f"fpl_gw{t}")
@@ -73,6 +74,9 @@ def solve(t, P, G, xp, cost, sell, pos, club, squad0, bank0, ft0,
 
         # squad flow: this week's squad = last week's + bought - sold
         m.addConstrs((x[p, g] == prev(p) + b[p, g] - s[p, g] for p in P), name=f"flow_{g}")
+        # can only sell a player you own, can only buy a player you don't own
+        m.addConstrs((s[p, g] <= prev(p) for p in P), name=f"sell_owned_{g}")
+        m.addConstrs((b[p, g] <= 1 - prev(p) for p in P), name=f"buy_new_{g}")
         # budget: money only moves through transfers, never negative
         m.addConstr(bank[g] == bank_prev
                     + gp.quicksum(sell_value[p] * s[p, g] for p in P)
@@ -82,8 +86,10 @@ def solve(t, P, G, xp, cost, sell, pos, club, squad0, bank0, ft0,
         m.addConstr(x.sum("*", g) == 15, name=f"squad15_{g}")
         for k, q in QUOTA.items():
             m.addConstr(gp.quicksum(x[p, g] for p in P if pos[p] == k) == q, name=f"quota_{k}_{g}")
+        # (if an owned player moved clubs mid-season we may keep him, but not add more)
         for cl in set(club.values()):
-            m.addConstr(gp.quicksum(x[p, g] for p in P if club[p] == cl) <= CLUB_LIMIT,
+            limit = max(CLUB_LIMIT, sum(1 for p in owned if club.get(p) == cl))
+            m.addConstr(gp.quicksum(x[p, g] for p in P if club[p] == cl) <= limit,
                         name=f"club_{cl}_{g}")
 
         # starting XI with a valid formation, captain among starters
@@ -104,6 +110,8 @@ def solve(t, P, G, xp, cost, sell, pos, club, squad0, bank0, ft0,
             m.addConstr(s.sum("*", g) == 0)
         else:
             m.addConstr(b.sum("*", g) == u[g] + h[g], name=f"transfers_{g}")
+            if max_transfers is not None:      # used by the "no transfers" baseline
+                m.addConstr(b.sum("*", g) <= max_transfers, name=f"max_transfers_{g}")
             m.addConstr(u[g] <= ft[g], name=f"use_free_{g}")
             if i == 0:
                 m.addConstr(ft[g] == ft0, name="ft_start")
