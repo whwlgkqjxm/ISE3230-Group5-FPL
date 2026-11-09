@@ -1,0 +1,39 @@
+GW,points,total,hits,transfers,free_transfers,captain,captain_pts,bank,squad_value,expected,buys,sells,n_vars,n_constrs,solve_time
+1,56,56,0,0,0,Mohamed Salah,8,0.0,100.0,60.6,,,6908,6980,0.177
+2,30,86,1,2,1,Mohamed Salah,5,1.9,97.9,64.2,"William Saliba, Rodrigo Muniz Carvalho","Yoane Wissa, Joško Gvardiol",7058,7128,0.224
+3,36,122,1,2,1,Mohamed Salah,3,0.6,99.1,64.9,"Riccardo Calafiori, Jurriën Timber","Axel Tuanzebe, Jeremie Frimpong",7128,7198,0.224
+4,61,183,0,1,1,Mohamed Salah,9,0.1,99.7,63.4,Jordan Pickford,Matz Sels,7408,7478,0.228
+5,45,228,0,1,1,Mohamed Salah,5,1.4,98.2,64.3,Marc Guéhi,William Saliba,7418,7488,0.262
+6,35,263,0,1,1,Mohamed Salah,2,0.2,99.3,63.7,Trevoh Chalobah,Álex Moreno Lopera,7428,7498,0.26
+7,66,329,1,2,1,Erling Haaland,8,0.2,99.3,64.7,"Ryan Gravenberch, Erling Haaland","Rodrigo Muniz Carvalho, Mohamed Salah",7438,7508,0.388
+8,63,392,0,1,1,Erling Haaland,13,1.6,97.8,64.0,Enzo Fernández,Florian Wirtz,7458,7528,0.245
+9,56,448,0,1,1,Erling Haaland,2,0.5,99.0,63.6,Gabriel dos Santos Magalhães,Nikola Milenković,7468,7538,0.243
+10,76,524,0,1,1,Erling Haaland,13,1.3,98.4,63.0,Danny Welbeck,Chris Wood,7478,7548,0.247
+11,30,554,0,1,1,Erling Haaland,4,0.2,99.6,65.7,Ryan Sessegnon,Justin Devenny,7528,7598,0.261
+12,54,608,0,1,1,Erling Haaland,2,0.6,99.3,63.9,Matheus Nunes,Riccardo Calafiori,7558,7628,0.233
+13,26,634,1,2,1,Bryan Mbeumo,1,0.8,99.0,61.8,"Daniel Muñoz Mejía, Eberechi Eze","Gabriel dos Santos Magalhães, Antoine Semenyo",7558,7628,0.227
+14,49,683,0,1,1,Bryan Mbeumo,2,0.3,99.7,59.3,Jean-Philippe Mateta,Jarrod Bowen,7588,7658,0.301
+15,60,743,0,1,1,Daniel Muñoz Mejía,0,0.2,99.9,58.4,Bruno Guimarães Rodriguez Moura,Enzo Fernández,7598,7668,0.259
+16,90,833,0,5,5,Phil Foden,11,0.1,99.7,64.1,"Jan Paul van Hecke, Kiernan Dewsbury-Hall, Harry Wilson, Phil Foden, Bruno Borges Fernandes","Jurriën Timber, Bryan Mbeumo, Eberechi Eze, Ryan Sessegnon, Ryan Gravenberch",7608,7678,0.245
+17,42,875,0,1,1,Phil Foden,3,1.0,99.0,66.6,Malo Gusto,Daniel Muñoz Mejía,7708,7778,0.152
+18,30,905,1,2,1,Morgan Rogers,1,0.6,99.3,67.8,"Morgan Rogers, Dominic Calvert-Lewin","Kiernan Dewsbury-Hall, Jean-Philippe Mateta",7758,7828,0.262
+19,49,954,0,1,1,Phil Foden,3,1.5,98.3,64.7,Florian Wirtz,Bruno Borges Fernandes,7808,7878,0.292
+20,45,999,0,1,1,Erling Haaland,2,2.4,97.5,64.6,Diogo Dalot Teixeira,Trevoh Chalobah,7908,7978,0.361
+21,58,1057,0,1,1,Florian Wirtz,3,0.3,99.6,60.2,Gabriel dos Santos Magalhães,Jan Paul van Hecke,7958,8028,0.177
+22,47,1104,0,1,1,Nathan Collins,1,0.3,99.9,62.5,Nathan Collins,Marc Guéhi,7998,8068,0.168
+23,35,1139,0,1,1,Florian Wirtz,2,1.8,98.3,60.6,Kevin Schade,Phil Foden,8038,8108,0.176
+24,37,1176,0,1,1,Bryan Mbeumo,2,0.4,99.7,57.2,Bryan Mbeumo,Bruno Guimarães Rodriguez Moura,8118,8188,0.234
+25,56,1232,2,3,1,Bruno Borges Fernandes,10,3.1,96.6,61.2,"Jurriën Timber, Bruno Borges Fernandes, Jarrod Bowen","Kevin Schade, Malo Gusto, Erling Haaland",8178,8248,0.243
+26,40,1272,0,1,1,Gabriel dos Santos Magalhães,7,2.0,97.9,76.8,William Saliba,Nathan Collins,8178,8248,0.177
+27,45,1317,0,1,1,Bryan Mbeumo,6,0.1,99.6,60.3,João Pedro Junqueira de Jesus,Dominic Calvert-Lewin,8188,8258,0.301
+28,55,1372,1,2,1,Cole Palmer,1,0.1,99.7,63.1,"Cole Palmer, Aaron Wan-Bissaka","Jurriën Timber, Florian Wirtz",8198,8268,0.322
+29,71,1443,0,1,1,Cole Palmer,9,0.1,99.5,63.3,Virgil van Dijk,William Saliba,8208,8278,0.212
+30,44,1487,0,1,1,João Pedro Junqueira de Jesus,2,1.1,98.8,63.2,Alex Iwobi,Morgan Rogers,8228,8298,0.285
+31,46,1533,0,1,1,Cole Palmer,2,0.7,99.3,61.2,Jeremie Frimpong,Matheus Nunes,8258,8328,0.26
+32,53,1586,0,1,1,Bruno Borges Fernandes,4,1.0,99.3,61.9,Antoine Semenyo,Bryan Mbeumo,8268,8338,0.257
+33,60,1646,0,1,1,Danny Welbeck,8,0.0,100.1,88.9,Nico O'Reilly,Aaron Wan-Bissaka,8298,8368,0.197
+34,49,1695,1,2,1,Bruno Borges Fernandes,5,5.7,94.4,59.2,"Norberto Bercique Gomes Betuncal, Morgan Gibbs-White","Cole Palmer, João Pedro Junqueira de Jesus",8308,8378,0.291
+35,26,1721,2,3,1,Morgan Gibbs-White,4,3.4,96.7,60.2,"Maxence Lacroix, Ismaïla Sarr, Gianluigi Donnarumma","Alex Iwobi, Diogo Dalot Teixeira, Martin Dúbravka",8328,8398,0.292
+36,83,1804,0,1,1,Jérémy Doku,12,5.0,95.1,81.8,Jérémy Doku,Antoine Semenyo,8388,8458,0.17
+37,77,1881,0,1,1,Ollie Watkins,15,2.7,97.4,58.1,Ollie Watkins,Danny Welbeck,8408,8478,0.166
+38,71,1952,0,1,1,Ollie Watkins,13,1.2,98.9,60.9,Dominik Szoboszlai,Harry Wilson,4209,4244,0.091

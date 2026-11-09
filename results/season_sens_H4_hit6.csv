@@ -1,0 +1,39 @@
+GW,points,total,hits,transfers,free_transfers,captain,captain_pts,bank,squad_value,expected,buys,sells,n_vars,n_constrs,solve_time
+1,56,56,0,0,0,Mohamed Salah,8,0.0,100.0,60.6,,,13816,13958,0.576
+2,30,86,1,2,1,Mohamed Salah,5,1.9,97.9,64.2,"William Saliba, Rodrigo Muniz Carvalho","Yoane Wissa, Joško Gvardiol",14116,14256,0.825
+3,36,122,1,2,1,Mohamed Salah,3,0.6,99.1,64.9,"Riccardo Calafiori, Jurriën Timber","Axel Tuanzebe, Jeremie Frimpong",14256,14396,0.899
+4,61,183,0,1,1,Mohamed Salah,9,0.1,99.7,63.4,Jordan Pickford,Matz Sels,14816,14956,0.84
+5,45,228,0,1,1,Mohamed Salah,5,1.4,98.2,64.3,Marc Guéhi,William Saliba,14836,14976,0.832
+6,35,263,0,1,1,Mohamed Salah,2,0.2,99.3,63.7,Trevoh Chalobah,Álex Moreno Lopera,14856,14996,0.988
+7,66,329,1,2,1,Erling Haaland,8,0.2,99.3,64.7,"Ryan Gravenberch, Erling Haaland","Rodrigo Muniz Carvalho, Mohamed Salah",14876,15016,2.241
+8,63,392,0,1,1,Erling Haaland,13,1.6,97.8,64.0,Enzo Fernández,Florian Wirtz,14916,15056,0.857
+9,56,448,0,1,1,Erling Haaland,2,0.5,99.0,63.6,Gabriel dos Santos Magalhães,Nikola Milenković,14936,15076,0.813
+10,76,524,0,1,1,Erling Haaland,13,1.3,98.4,63.0,Danny Welbeck,Chris Wood,14956,15096,0.844
+11,30,554,0,1,1,Erling Haaland,4,0.2,99.6,65.7,Ryan Sessegnon,Justin Devenny,15056,15196,0.964
+12,54,608,0,1,1,Erling Haaland,2,0.6,99.3,63.9,Matheus Nunes,Riccardo Calafiori,15116,15256,0.935
+13,31,639,0,1,1,Bryan Mbeumo,1,0.3,99.5,59.6,Eberechi Eze,Antoine Semenyo,15116,15256,0.712
+14,49,688,0,1,1,Bryan Mbeumo,2,0.6,99.3,58.0,Daniel Muñoz Mejía,Gabriel dos Santos Magalhães,15176,15316,0.748
+15,67,755,0,1,1,Daniel Muñoz Mejía,0,0.5,99.3,58.7,Bruno Guimarães Rodriguez Moura,Enzo Fernández,15196,15336,0.901
+16,72,827,0,5,5,Phil Foden,11,0.1,99.7,64.7,"Kiernan Dewsbury-Hall, Maxence Lacroix, James Tarkowski, Phil Foden, Bruno Borges Fernandes","Jurriën Timber, Bryan Mbeumo, Daniel Muñoz Mejía, Eberechi Eze, Ryan Sessegnon",15216,15356,0.705
+17,45,872,0,1,1,Phil Foden,3,-0.0,100.0,66.9,Harry Wilson,Ryan Gravenberch,15416,15556,0.884
+18,43,915,0,1,1,Phil Foden,2,0.6,99.4,66.0,Dominic Calvert-Lewin,Danny Welbeck,15516,15656,1.822
+19,52,967,0,1,1,Phil Foden,3,0.1,99.9,64.4,Morgan Rogers,Bruno Guimarães Rodriguez Moura,15616,15756,1.168
+20,39,1006,0,1,1,Erling Haaland,2,1.0,99.1,65.6,Florian Wirtz,Bruno Borges Fernandes,15816,15956,0.774
+21,58,1064,0,1,1,Florian Wirtz,3,1.2,99.0,61.3,Nathan Collins,Maxence Lacroix,15916,16056,1.198
+22,50,1114,0,1,1,Kevin Schade,1,2.8,97.5,62.7,Kevin Schade,Phil Foden,15996,16136,0.949
+23,48,1162,0,1,1,Florian Wirtz,2,0.8,99.4,60.6,Gabriel dos Santos Magalhães,Marc Guéhi,16076,16216,0.989
+24,36,1198,1,2,1,Bryan Mbeumo,2,3.2,97.0,62.0,"Ollie Watkins, Bryan Mbeumo","Kiernan Dewsbury-Hall, Erling Haaland",16236,16376,0.891
+25,63,1261,0,1,1,Bruno Borges Fernandes,10,0.5,99.6,61.0,Bruno Borges Fernandes,Kevin Schade,16356,16496,0.86
+26,41,1302,0,1,1,Gabriel dos Santos Magalhães,7,0.0,100.3,72.9,William Saliba,James Tarkowski,16356,16496,0.933
+27,44,1346,0,1,1,Bryan Mbeumo,6,0.9,99.2,60.3,João Pedro Junqueira de Jesus,Ollie Watkins,16376,16516,1.171
+28,56,1402,1,2,1,Cole Palmer,1,0.6,99.5,62.9,"Cole Palmer, Mateus Gonçalo Espanha Fernandes","Morgan Rogers, Florian Wirtz",16396,16536,1.794
+29,73,1475,0,1,1,Cole Palmer,9,0.6,99.2,63.1,Virgil van Dijk,William Saliba,16416,16556,1.002
+30,43,1518,0,1,1,João Pedro Junqueira de Jesus,2,-0.0,100.0,61.7,Alex Iwobi,Harry Wilson,16456,16596,1.103
+31,46,1564,0,1,1,Cole Palmer,2,0.9,99.0,58.7,Jan Paul van Hecke,Trevoh Chalobah,16516,16656,0.891
+32,51,1615,0,1,1,Bruno Borges Fernandes,4,0.3,99.8,60.4,Danny Welbeck,Dominic Calvert-Lewin,16536,16676,0.508
+33,75,1690,0,1,1,Danny Welbeck,8,0.1,99.8,90.1,Nico O'Reilly,Nathan Collins,16596,16736,0.586
+34,46,1736,2,3,1,Bruno Borges Fernandes,5,5.2,94.7,58.7,"Maxence Lacroix, Norberto Bercique Gomes Betuncal, Morgan Gibbs-White","Jan Paul van Hecke, Cole Palmer, João Pedro Junqueira de Jesus",16616,16756,2.09
+35,34,1770,0,1,1,Morgan Gibbs-White,4,5.1,94.8,59.3,Ismaïla Sarr,Alex Iwobi,16656,16796,1.8
+36,70,1840,0,1,1,Jérémy Doku,12,4.1,95.8,79.6,Jérémy Doku,Mateus Gonçalo Espanha Fernandes,12582,12687,0.505
+37,56,1896,0,1,1,Jérémy Doku,2,2.0,98.0,56.4,David Raya Martín,Martin Dúbravka,8408,8478,0.174
+38,66,1962,0,1,1,Ollie Watkins,13,1.1,98.9,58.7,Ollie Watkins,Jarrod Bowen,4209,4244,0.135

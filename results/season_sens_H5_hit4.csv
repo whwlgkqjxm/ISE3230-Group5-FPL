@@ -1,0 +1,39 @@
+GW,points,total,hits,transfers,free_transfers,captain,captain_pts,bank,squad_value,expected,buys,sells,n_vars,n_constrs,solve_time
+1,56,56,0,0,0,Mohamed Salah,8,0.0,100.0,60.6,,,17270,17447,0.937
+2,30,86,1,2,1,Mohamed Salah,5,1.9,97.9,64.2,"William Saliba, Rodrigo Muniz Carvalho","Yoane Wissa, Joško Gvardiol",17645,17820,1.786
+3,20,106,3,4,1,Mohamed Salah,3,0.7,99.0,69.3,"Riccardo Calafiori, Jurriën Timber, Jordan Pickford, Hugo Ekitiké","Jeremie Frimpong, Matz Sels, Nikola Milenković, Jarrod Bowen",17820,17995,1.478
+4,61,167,0,1,1,Mohamed Salah,9,2.5,97.2,65.6,Enzo Fernández,Florian Wirtz,18520,18695,1.094
+5,45,212,0,1,1,Mohamed Salah,5,1.7,98.0,66.4,Marc Guéhi,Axel Tuanzebe,18545,18720,2.729
+6,34,246,0,1,1,Mohamed Salah,2,0.5,99.3,65.1,Trevoh Chalobah,Álex Moreno Lopera,18570,18745,2.891
+7,71,317,1,2,1,Erling Haaland,8,0.5,99.3,64.7,"Ryan Gravenberch, Erling Haaland","Rodrigo Muniz Carvalho, Mohamed Salah",18595,18770,3.444
+8,70,387,1,2,1,Erling Haaland,13,1.1,98.7,66.1,"Gabriel dos Santos Magalhães, Jarrod Bowen","William Saliba, Hugo Ekitiké",18645,18820,1.006
+9,52,439,0,1,1,Erling Haaland,2,1.2,98.7,65.6,Daniel Muñoz Mejía,Riccardo Calafiori,18670,18845,3.012
+10,76,515,0,1,1,Erling Haaland,13,2.0,98.2,64.1,Danny Welbeck,Chris Wood,18695,18870,1.976
+11,33,548,0,1,1,Erling Haaland,4,1.8,98.4,66.8,Declan Rice,Enzo Fernández,18820,18995,1.284
+12,62,610,0,1,1,Erling Haaland,2,0.7,99.8,66.0,Ryan Sessegnon,Justin Devenny,18895,19070,1.175
+13,33,643,0,1,1,Bryan Mbeumo,1,1.5,98.9,62.8,Bruno Guimarães Rodriguez Moura,Antoine Semenyo,18895,19070,1.19
+14,56,699,0,1,1,Bryan Mbeumo,2,1.0,99.7,59.3,Jean-Philippe Mateta,Jarrod Bowen,18970,19145,1.624
+15,68,767,0,1,1,Daniel Muñoz Mejía,0,1.4,99.4,59.0,Harry Wilson,Ryan Gravenberch,18995,19170,1.246
+16,80,847,0,5,5,Phil Foden,11,0.2,100.4,65.4,"Kiernan Dewsbury-Hall, Maxence Lacroix, James Tarkowski, Phil Foden, Bruno Borges Fernandes","Gabriel dos Santos Magalhães, Declan Rice, Bryan Mbeumo, Daniel Muñoz Mejía, Ryan Sessegnon",19020,19195,1.028
+17,38,885,0,1,1,Phil Foden,3,0.5,100.3,66.8,Jarrod Bowen,Jean-Philippe Mateta,19270,19445,1.063
+18,33,918,0,1,1,Morgan Rogers,1,0.0,100.8,67.0,Morgan Rogers,Bruno Guimarães Rodriguez Moura,19395,19570,1.257
+19,38,956,1,2,1,Phil Foden,3,0.5,100.2,65.6,"Joško Gvardiol, Dominic Calvert-Lewin","Jurriën Timber, Danny Welbeck",19520,19695,1.119
+20,39,995,0,1,1,Erling Haaland,2,1.4,99.5,65.5,Florian Wirtz,Bruno Borges Fernandes,19770,19945,1.406
+21,59,1054,0,1,1,Florian Wirtz,3,1.6,99.2,61.4,Nathan Collins,Maxence Lacroix,19895,20070,1.623
+22,46,1100,1,2,1,Kevin Schade,1,2.4,98.5,63.5,"Gabriel dos Santos Magalhães, Kevin Schade","Joško Gvardiol, Phil Foden",19995,20170,1.627
+23,44,1144,0,1,1,Florian Wirtz,2,1.1,99.8,61.9,Ollie Watkins,Jarrod Bowen,20095,20270,2.407
+24,38,1182,1,2,1,Bryan Mbeumo,2,4.7,96.3,62.0,"Bryan Mbeumo, Jarrod Bowen","Kiernan Dewsbury-Hall, Erling Haaland",20295,20470,0.977
+25,53,1235,2,3,1,Bruno Borges Fernandes,10,3.1,97.5,63.0,"Declan Rice, João Pedro Junqueira de Jesus, Bruno Borges Fernandes","Morgan Rogers, Ollie Watkins, Kevin Schade",20445,20620,1.348
+26,61,1296,0,1,1,Gabriel dos Santos Magalhães,7,1.9,99.0,79.3,William Saliba,Nathan Collins,20445,20620,1.414
+27,42,1338,1,2,1,Cole Palmer,3,0.3,100.6,63.6,"Cole Palmer, Aaron Wan-Bissaka","Declan Rice, James Tarkowski",20470,20645,4.091
+28,62,1400,0,1,1,Cole Palmer,1,0.4,100.5,64.5,Virgil van Dijk,William Saliba,20495,20670,1.292
+29,74,1474,1,2,1,Cole Palmer,9,0.3,100.3,66.9,"Antoine Semenyo, Gianluigi Donnarumma","Jordan Pickford, Florian Wirtz",20520,20695,1.615
+30,40,1514,1,2,1,João Pedro Junqueira de Jesus,2,0.7,100.3,66.1,"James Hill, Alex Iwobi","Trevoh Chalobah, Harry Wilson",20570,20745,1.146
+31,36,1550,1,2,1,Cole Palmer,2,0.0,100.9,61.6,"Danny Welbeck, Mads Hermansen","Martin Dúbravka, Dominic Calvert-Lewin",20645,20820,1.467
+32,57,1607,0,0,1,Bruno Borges Fernandes,4,0.0,101.1,61.6,,,20670,20845,0.625
+33,61,1668,0,0,2,Danny Welbeck,8,0.0,100.8,91.7,,,20745,20920,1.326
+34,48,1716,2,5,3,Bruno Borges Fernandes,5,0.9,99.9,63.5,"Maxence Lacroix, Ismaïla Sarr, Norberto Bercique Gomes Betuncal, Mohamed Salah, Morgan Gibbs-White","Antoine Semenyo, Bryan Mbeumo, Cole Palmer, João Pedro Junqueira de Jesus, Aaron Wan-Bissaka",20770,20945,1.562
+35,40,1756,0,1,1,Morgan Gibbs-White,4,0.6,100.3,63.2,Rayan Cherki,Alex Iwobi,16656,16796,0.79
+36,90,1846,0,1,1,Marc Guéhi,15,0.7,100.0,84.5,Daniel Muñoz Mejía,Virgil van Dijk,12582,12687,0.593
+37,43,1889,0,1,1,Jérémy Doku,2,0.7,100.0,57.0,Jérémy Doku,Rayan Cherki,8408,8478,0.307
+38,66,1955,0,1,1,Morgan Gibbs-White,9,1.4,99.4,57.8,William Osula,Danny Welbeck,4209,4244,0.12

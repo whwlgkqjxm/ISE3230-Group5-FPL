@@ -1,0 +1,39 @@
+GW,points,total,hits,transfers,free_transfers,captain,captain_pts,bank,squad_value,expected,buys,sells,n_vars,n_constrs,solve_time
+1,56,56,0,0,0,Mohamed Salah,8,0.0,100.0,60.6,,,3454,3490,0.063
+2,31,87,0,1,1,Mohamed Salah,5,0.9,98.9,61.5,Tyrick Mitchell,Joško Gvardiol,3529,3564,0.074
+3,44,131,0,1,1,Mohamed Salah,3,1.2,98.5,59.9,Jurriën Timber,Jeremie Frimpong,3564,3599,0.074
+4,62,193,0,1,1,Mohamed Salah,9,1.0,98.7,61.1,João Pedro Junqueira de Jesus,Yoane Wissa,3704,3739,0.075
+5,51,244,0,1,1,Mohamed Salah,5,0.2,99.3,63.8,Marc Guéhi,Axel Tuanzebe,3709,3744,0.068
+6,37,281,0,1,1,Mohamed Salah,2,0.4,99.0,63.9,Trevoh Chalobah,Nikola Milenković,3714,3749,0.072
+7,57,338,0,1,1,Mohamed Salah,2,0.2,99.1,62.9,Nick Pope,Matz Sels,3719,3754,0.089
+8,43,381,0,1,1,Antoine Semenyo,4,1.6,97.4,62.5,Enzo Fernández,Florian Wirtz,3729,3764,0.083
+9,60,441,0,1,1,Antoine Semenyo,3,0.3,98.5,60.2,Gabriel dos Santos Magalhães,Trevoh Chalobah,3734,3769,0.093
+10,70,511,0,1,1,Antoine Semenyo,2,1.1,97.6,61.3,Danny Welbeck,Chris Wood,3739,3774,0.08
+11,39,550,0,1,1,Gabriel dos Santos Magalhães,1,1.0,97.8,63.5,Declan Rice,Enzo Fernández,3764,3799,0.095
+12,39,589,0,1,1,Gabriel dos Santos Magalhães,0,0.6,98.4,62.7,Matheus Nunes,Marc Guéhi,3779,3814,0.093
+13,20,609,0,1,1,Bryan Mbeumo,1,1.1,97.9,58.7,Daniel Muñoz Mejía,Gabriel dos Santos Magalhães,3779,3814,0.078
+14,41,650,0,1,1,Bryan Mbeumo,2,0.7,98.2,54.5,Eberechi Eze,Antoine Semenyo,3794,3829,0.072
+15,46,696,0,1,1,Daniel Muñoz Mejía,0,0.3,98.5,55.7,Jordan Pickford,Nick Pope,3799,3834,0.071
+16,62,758,0,5,5,Phil Foden,11,0.9,97.4,61.8,"Trevoh Chalobah, Maxence Lacroix, Marc Guéhi, Phil Foden, Bruno Borges Fernandes","Jurriën Timber, Álex Moreno Lopera, Daniel Muñoz Mejía, Justin Devenny, Mohamed Salah",3804,3839,0.078
+17,44,802,0,1,1,Phil Foden,3,0.7,97.5,64.1,Morgan Rogers,Declan Rice,3854,3889,0.072
+18,36,838,0,1,1,Morgan Rogers,1,2.9,95.3,62.9,Harry Wilson,Bryan Mbeumo,3879,3914,0.098
+19,46,884,0,1,1,Phil Foden,3,2.2,95.8,60.7,Florian Wirtz,Eberechi Eze,3904,3939,0.08
+20,52,936,0,1,1,Ollie Watkins,7,0.8,97.4,60.6,Ollie Watkins,João Pedro Junqueira de Jesus,3954,3989,0.093
+21,44,980,0,1,1,Florian Wirtz,3,2.8,95.3,59.6,Kevin Schade,Bruno Borges Fernandes,3979,4014,0.075
+22,42,1022,0,1,1,Kevin Schade,1,2.8,95.4,60.7,Nathan Collins,Tyrick Mitchell,3999,4034,0.075
+23,54,1076,0,1,1,Florian Wirtz,2,1.1,97.1,58.4,Gabriel dos Santos Magalhães,Marc Guéhi,4019,4054,0.076
+24,41,1117,0,1,1,Bryan Mbeumo,2,1.1,96.8,60.8,Bryan Mbeumo,Phil Foden,4059,4094,0.077
+25,56,1173,0,1,1,Florian Wirtz,2,1.3,96.5,59.9,Enzo Fernández,Kevin Schade,4089,4124,0.085
+26,44,1217,0,1,1,Gabriel dos Santos Magalhães,7,1.1,97.0,71.8,Viktor Gyökeres,Ollie Watkins,4089,4124,0.087
+27,51,1268,0,1,1,Bryan Mbeumo,6,2.2,95.7,58.1,João Pedro Junqueira de Jesus,Viktor Gyökeres,4094,4129,0.089
+28,55,1323,0,1,1,João Pedro Junqueira de Jesus,2,1.2,96.6,58.6,Virgil van Dijk,Nathan Collins,4099,4134,0.091
+29,75,1398,0,1,1,João Pedro Junqueira de Jesus,19,1.2,96.2,60.4,Antoine Semenyo,Florian Wirtz,4104,4139,0.087
+30,36,1434,0,1,1,João Pedro Junqueira de Jesus,2,0.8,96.7,58.9,Ismaïla Sarr,Harry Wilson,4114,4149,0.092
+31,41,1475,0,1,1,João Pedro Junqueira de Jesus,2,2.0,95.4,48.3,Dominik Szoboszlai,Antoine Semenyo,4129,4164,0.09
+32,54,1529,0,1,1,Bruno Borges Fernandes,4,0.2,97.2,57.4,Bruno Borges Fernandes,Bryan Mbeumo,4134,4169,0.093
+33,77,1606,0,1,1,Danny Welbeck,8,0.5,97.0,82.2,Nico O'Reilly,Trevoh Chalobah,4149,4184,0.079
+34,44,1650,0,1,1,Bruno Borges Fernandes,5,3.2,94.4,56.1,Norberto Bercique Gomes Betuncal,João Pedro Junqueira de Jesus,4154,4189,0.083
+35,41,1691,0,1,1,Morgan Gibbs-White,4,2.1,95.7,60.4,Morgan Gibbs-White,Enzo Fernández,4164,4199,0.098
+36,70,1761,0,1,1,Jérémy Doku,12,2.9,94.9,80.5,Jérémy Doku,Morgan Rogers,4194,4229,0.081
+37,63,1824,0,1,1,Jérémy Doku,2,0.8,97.0,57.3,David Raya Martín,Martin Dúbravka,4204,4239,0.08
+38,55,1879,0,1,1,Morgan Gibbs-White,9,1.6,96.3,58.9,William Osula,Danny Welbeck,4209,4244,0.101
