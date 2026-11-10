@@ -10,6 +10,7 @@ Step 6 of the project: post-optimality analysis, figures and tables for the repo
                                      -> lp_duals_gw1.csv, player_sensitivity_gw1.csv
   E. model size vs solve time        -> model_size_time.csv, fig4_solve_time.png
   F. forecast vs actual (main model) -> fig5_expected_vs_actual.png
+  G. optimization point over H      -> fig6_optimal_horizon.png  (uses part B's table)
 
 Run:  python analysis.py          (everything, ~10 min)
       python analysis.py A D      (only some parts)
@@ -238,13 +239,46 @@ def part_f():
     save(fig, "fig5_expected_vs_actual.png")
 
 
+# --------------------------------------------------------------------------- G
+def part_g(hit_cost=4):
+    """Season points vs. look-ahead H at the real hit cost: rises, peaks, then falls."""
+    tab = pd.read_csv(RES / "sens_horizon_hit.csv")
+    s = tab[tab.plan_hit_cost == hit_cost].sort_values("horizon")
+    best = s.loc[s.total_points.idxmax()]
+
+    fig, ax = plt.subplots(figsize=(7, 4.2))
+    ax.plot(s.horizon, s.total_points, color=SERIES[0], marker="o", markersize=7)
+    ax.scatter([best.horizon], [best.total_points], s=160, color=SERIES[0],
+               edgecolor=SURFACE, linewidth=2, zorder=3)
+    ax.annotate(f"Optimization point\nH = {int(best.horizon)}  ({int(best.total_points):,} pts)",
+                (best.horizon, best.total_points), xytext=(0, 14), textcoords="offset points",
+                fontsize=9.5, fontweight="bold", color=INK, va="bottom", ha="center")
+    first, last = s.iloc[0], s.iloc[-1]
+    for row in (first, last):
+        ax.annotate(f"{int(row.total_points):,}", (row.horizon, row.total_points), xytext=(0, -16),
+                    textcoords="offset points", ha="center", fontsize=8.5, color=MUTED)
+    ax.text(0.02, 0.97, "planning further ahead helps", transform=ax.transAxes,
+            fontsize=8.5, color=MUTED, va="top")
+    ax.text(0.98, 0.97, "until forecasts get too noisy", transform=ax.transAxes,
+            fontsize=8.5, color=MUTED, va="top", ha="right")
+    ax.set_title("Season points vs. look-ahead horizon")
+    ax.set_xlabel("Look-ahead H (gameweeks planned at each deadline)")
+    ax.set_ylabel("Season points")
+    ax.set_xticks(s.horizon)
+    span = s.total_points.max() - s.total_points.min()
+    bottom = s.total_points.min() - 0.2 * span
+    ax.set_ylim(bottom, s.total_points.max() + 0.55 * span)
+    ax.vlines(best.horizon, bottom, best.total_points, color=MUTED, linestyle="--", linewidth=1, zorder=1)
+    save(fig, "fig6_optimal_horizon.png")
+
+
 if __name__ == "__main__":
-    parts = [a.upper() for a in sys.argv[1:]] or list("ABCDEF")
+    parts = [a.upper() for a in sys.argv[1:]] or list("ABCDEFG")
     df, xp = load()
     RES.mkdir(exist_ok=True)
     for p in parts:
         print(f"\n=== part {p} ===")
-        {"A": part_a, "F": part_f}.get(p, lambda: None)()
+        {"A": part_a, "F": part_f, "G": part_g}.get(p, lambda: None)()
         if p == "B": part_b(df, xp)
         if p == "C": part_c(df, xp)
         if p == "D": part_d(df, xp)
