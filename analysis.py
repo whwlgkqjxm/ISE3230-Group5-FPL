@@ -10,7 +10,7 @@ Step 6 of the project: post-optimality analysis, figures and tables for the repo
                                      -> lp_gap_gw1.csv, lp_duals_gw1.csv, player_sensitivity_gw1.csv
   E. model size vs solve time        -> model_size_time.csv, fig4_solve_time.png
   F. forecast vs actual (main model) -> fig5_expected_vs_actual.png
-  G. optimization point over H      -> fig6_optimal_horizon.png  (uses part B's table)
+  G. season points over H (hit -4) -> fig6_optimal_horizon.png  (uses part B's table)
 
 Run:  python analysis.py          (everything, ~10 min)
       python analysis.py A D      (only some parts)
@@ -212,8 +212,10 @@ def part_e(df, xp, gws=(1, 20), horizons=(1, 3, 5, 8), shares=(0.1, 0.25, 0.5, 1
                 n_keep = {k: max(M.QUOTA[k] + 2, int(round(v * sh))) for k, v in counts.items()}
                 P, G, xpd, price, pos, club, _ = M.build_inputs(df, xp, t, H, n_keep=n_keep)
                 r = M.solve(t, P, G, xpd, price, price, pos, club, [], 100.0, 0)
+                status = {2: "optimal", 9: "time_limit"}.get(r["model"].Status, str(r["model"].Status))
                 rows.append({"GW": t, "horizon": H, "candidates": len(P), "variables": r["n_vars"],
-                             "constraints": r["n_constrs"], "solve_time_s": round(r["runtime"], 3)})
+                             "constraints": r["n_constrs"], "solve_time_s": round(r["runtime"], 3),
+                             "status": status, "mip_gap_percent": round(100 * r["model"].MIPGap, 3)})
                 r["model"].dispose()
     tab = pd.DataFrame(rows)
     tab.to_csv(RES / "model_size_time.csv", index=False)
@@ -261,18 +263,16 @@ def part_g(hit_cost=4):
     ax.plot(s.horizon, s.total_points, color=SERIES[0], marker="o", markersize=7)
     ax.scatter([best.horizon], [best.total_points], s=160, color=SERIES[0],
                edgecolor=SURFACE, linewidth=2, zorder=3)
-    ax.annotate(f"Optimization point\nH = {int(best.horizon)}  ({int(best.total_points):,} pts)",
-                (best.horizon, best.total_points), xytext=(0, 14), textcoords="offset points",
-                fontsize=9.5, fontweight="bold", color=INK, va="bottom", ha="center")
-    first, last = s.iloc[0], s.iloc[-1]
-    for row in (first, last):
-        ax.annotate(f"{int(row.total_points):,}", (row.horizon, row.total_points), xytext=(0, -16),
-                    textcoords="offset points", ha="center", fontsize=8.5, color=MUTED)
-    ax.text(0.02, 0.97, "planning further ahead helps", transform=ax.transAxes,
-            fontsize=8.5, color=MUTED, va="top")
-    ax.text(0.98, 0.97, "until forecasts get too noisy", transform=ax.transAxes,
-            fontsize=8.5, color=MUTED, va="top", ha="right")
-    ax.set_title("Season points vs. look-ahead horizon")
+    at_edge = best.horizon == s.horizon.max()
+    label = "Best of tested H" + (" (largest H tested)" if at_edge else "")
+    ax.annotate(f"{label}\nH = {int(best.horizon)}  ({int(best.total_points):,} pts)",
+                (best.horizon, best.total_points), xytext=(6 if at_edge else 0, 14), textcoords="offset points",
+                fontsize=9.5, fontweight="bold", color=INK, va="bottom", ha="right" if at_edge else "center")
+    for row in s.itertuples():
+        if row.horizon != best.horizon:
+            ax.annotate(f"{int(row.total_points):,}", (row.horizon, row.total_points), xytext=(0, -16),
+                        textcoords="offset points", ha="center", fontsize=8.5, color=MUTED)
+    ax.set_title(f"Season points vs. look-ahead horizon (hit cost -{hit_cost})")
     ax.set_xlabel("Look-ahead H (gameweeks planned at each deadline)")
     ax.set_ylabel("Season points")
     ax.set_xticks(s.horizon)
