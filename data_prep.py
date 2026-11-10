@@ -5,6 +5,7 @@ Step 1 of the project: download the 2025-26 FPL data and turn it into ONE clean
 table with one row per (player, gameweek).
 
 Output: data/processed/player_gw.csv
+        data/processed/fixtures_known.csv  (matches per club and GW as known at each GW deadline)
 
 Columns
   element      player id
@@ -63,6 +64,40 @@ def team_fixture_counts(fixtures, teams):
     # every (team, GW) pair, 0 where the club has no match
     full = pd.MultiIndex.from_product([id2name.values, range(1, N_GW + 1)], names=["team", "GW"])
     return counts.set_index(["team", "GW"]).reindex(full, fill_value=0).reset_index()
+
+
+def known_fixture_counts(fixtures, teams):
+    """
+    Matches per club in each future GW, as they were KNOWN at the deadline of each decision GW.
+    fixtures.csv holds the final schedule; 5 matches were moved after the season started
+    (data/raw/fixture_changes.csv, with the official announcement dates). Before a match was
+    postponed it counts in its original GW; once postponed without a new date it counts in no GW
+    (as in FPL); once the new date was announced it counts in its final GW.
+    A change is known at decision GW t if it was announced before the day of t's first kick-off.
+    """
+    changes = pd.read_csv(RAW_DIR / "fixture_changes.csv").set_index("fixture_id")
+    id2name = teams.set_index("id")["name"]
+    fx = fixtures.copy()
+    fx["ko"] = pd.to_datetime(fx["kickoff_time"]).dt.tz_localize(None)
+    deadline_day = fx.groupby("event")["ko"].min().dt.normalize()     # first kick-off day of each GW
+    rows = []
+    for t in range(1, N_GW + 1):
+        day = deadline_day[t]
+        for f in fx.itertuples():
+            gw = f.event
+            if f.id in changes.index:
+                c = changes.loc[f.id]
+                if not pd.Timestamp(c.postponed_known) < day:
+                    gw = c.original_gw                     # change not yet known
+                elif not pd.Timestamp(c.new_date_known) < day:
+                    gw = None                              # postponed, new date not yet known
+            if gw is not None and gw >= t:
+                rows += [(t, id2name[f.team_h], gw), (t, id2name[f.team_a], gw)]
+    known = pd.DataFrame(rows, columns=["decision_gw", "team", "GW"])
+    known = known.groupby(["decision_gw", "team", "GW"]).size().rename("n_fixtures")
+    full = pd.MultiIndex.from_tuples([(t, tm, g) for t in range(1, N_GW + 1) for tm in id2name.values
+                                      for g in range(t, N_GW + 1)], names=["decision_gw", "team", "GW"])
+    return known.reindex(full, fill_value=0).reset_index()
 
 
 def build_player_gw(merged, fixtures, teams):
@@ -125,4 +160,10 @@ if __name__ == "__main__":
     sanity_checks(df)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     df.to_csv(OUT_DIR / "player_gw.csv", index=False)
+    known = known_fixture_counts(fixtures, teams)
+    known.to_csv(OUT_DIR / "fixtures_known.csv", index=False)
+    n_diff = (known.merge(team_fixture_counts(fixtures, teams), on=["team", "GW"], suffixes=("", "_final"))
+              .query("n_fixtures != n_fixtures_final")[["decision_gw", "team", "GW"]])
+    print(f"saved {OUT_DIR / 'fixtures_known.csv'}  ({len(n_diff)} (decision GW, club, GW) entries differ "
+          f"from the final fixture list)")
     print(f"\nsaved {OUT_DIR / 'player_gw.csv'}  ({len(df)} rows, {df.element.nunique()} players)")

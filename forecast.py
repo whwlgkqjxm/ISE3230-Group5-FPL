@@ -14,7 +14,8 @@ For each future GW g = t, t+1, ..., t+H-1:
                only ~5% of the time, so recency matters a lot.)
   pts_per_app  points per match when he plays, over the last W gameweeks, shrunk toward
                a prior with weight K ("K pseudo-matches").
-  n_fixtures   0 in a blank GW, 2 in a double GW (fixture list is published in advance).
+  n_fixtures   0 in a blank GW, 2 in a double GW, as KNOWN at the deadline of GW t
+               (data/processed/fixtures_known.csv; later rescheduling is not used).
 
   Priors come from LAST season (2024-25, same GitHub repo): minutes share and points per
   appearance. Players with no PL history last season get values predicted from their price
@@ -85,7 +86,7 @@ def forecast_all(df, prior, window=WINDOW, k=K_PRIOR, horizon=HORIZON,
     pts, nfix, mins, team, avail = piv("points"), piv("n_fixtures"), piv("minutes"), piv("team"), piv("available")
     fix = nfix * avail                                   # matches the player could have played
     apps = piv("apps") * avail                           # matches he actually played (per match)
-    team_fix = df.drop_duplicates(["team", "GW"]).set_index(["team", "GW"])["n_fixtures"]
+    known = pd.read_csv(OUT_DIR / "fixtures_known.csv").set_index(["decision_gw", "team", "GW"])["n_fixtures"]
     prior = prior.reindex(pts.index)
 
     out = []
@@ -107,7 +108,8 @@ def forecast_all(df, prior, window=WINDOW, k=K_PRIOR, horizon=HORIZON,
         players = avail.index[avail[t] == 1]          # must exist in the game at t
         club_now = team.loc[players, t]               # club known at the deadline
         for g in range(t, min(t + horizon, N_GW + 1)):
-            nf = team_fix.reindex(pd.MultiIndex.from_arrays([club_now.values, [g] * len(players)])).values
+            nf = known.reindex(pd.MultiIndex.from_arrays([[t] * len(players), club_now.values,
+                                                          [g] * len(players)])).values
             out.append(pd.DataFrame({"decision_gw": t, "element": players, "GW": g,
                                      "xp": rate.loc[players].values * nf}))
     return pd.concat(out, ignore_index=True)
