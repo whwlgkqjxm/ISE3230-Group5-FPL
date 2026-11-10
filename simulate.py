@@ -101,7 +101,10 @@ def run_season(df, xp, name="milp_H3", horizon=3, hit_cost=M.HIT_COST, plan_hit_
                      "expected": round(sum(xpd[p, t] for p in r["lineup"]) + xpd[r["captain"], t], 1),
                      "buys": ", ".join(pname[p] for p in r["buys"]) if t > 1 else "",
                      "sells": ", ".join(pname[p] for p in r["sells"]),
-                     "n_vars": r["n_vars"], "n_constrs": r["n_constrs"], "solve_time": round(solve_time, 3)})
+                     "n_vars": r["n_vars"], "n_constrs": r["n_constrs"], "solve_time": round(solve_time, 3),
+                     "squad": "; ".join(pname[p] for p in squad),
+                     "lineup": "; ".join(pname[p] for p in r["lineup"]),
+                     "auto_subs_in": "; ".join(pname[p] for p in xi if p not in r["lineup"])})
         if verbose:
             print(f"GW{t:2d}  {pts:4d} pts  total {total:5d}  transfers {rows[-1]['transfers']}"
                   f"  hits {r['hits']}  C: {pname[r['captain']]}")

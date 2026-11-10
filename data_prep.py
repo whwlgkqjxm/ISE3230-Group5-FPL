@@ -16,6 +16,7 @@ Columns
   available    1 if the player exists in the game that GW (new signings appear later)
   price        price in £m that GW
   minutes      minutes played (summed over the GW)
+  apps         matches actually played that GW (0, 1 or 2; counted per match)
   points       actual FPL points (summed over the GW)
 
 Data problems handled
@@ -77,6 +78,7 @@ def build_player_gw(merged, fixtures, teams):
                team=("team", "first"),
                price=("value", "first"),
                minutes=("minutes", "sum"),
+               apps=("minutes", lambda s: int((s > 0).sum())),   # per match, not per GW
                points=("total_points", "sum"))
           .reset_index())
     gw["price"] = gw["price"] / 10  # 55 -> 5.5 (£m)
@@ -95,13 +97,13 @@ def build_player_gw(merged, fixtures, teams):
     df = df.sort_values(["element", "GW"])
     for col in ["team", "price"]:
         df[col] = df.groupby("element")[col].transform(lambda s: s.ffill().bfill())
-    df[["minutes", "points"]] = df[["minutes", "points"]].fillna(0).astype(int)
+    df[["minutes", "points", "apps"]] = df[["minutes", "points", "apps"]].fillna(0).astype(int)
 
     # number of matches that GW for the player's club
     df = df.merge(team_fixture_counts(fixtures, teams), on=["team", "GW"], how="left")
 
     cols = ["element", "name", "position", "GW", "team", "n_fixtures",
-            "available", "price", "minutes", "points"]
+            "available", "price", "minutes", "apps", "points"]
     return df[cols].reset_index(drop=True)
 
 
