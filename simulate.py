@@ -104,6 +104,7 @@ def run_season(df, xp, name="milp_H3", horizon=3, hit_cost=M.HIT_COST, plan_hit_
                      "n_vars": r["n_vars"], "n_constrs": r["n_constrs"], "solve_time": round(solve_time, 3),
                      "squad": "; ".join(pname[p] for p in squad),
                      "lineup": "; ".join(pname[p] for p in r["lineup"]),
+                     "vice": pname[vice], "bench": "; ".join(pname[p] for p in r["bench"]),
                      "auto_subs_in": "; ".join(pname[p] for p in xi if p not in r["lineup"])})
         if verbose:
             print(f"GW{t:2d}  {pts:4d} pts  total {total:5d}  transfers {rows[-1]['transfers']}"

@@ -53,7 +53,7 @@ def run_all(n_keep=None, hold_horizon=8):
                                         n_keep=n_keep, verbose=False)
     crowd_df = ownership(df)
     logs["crowd"] = S.run_season(df, xp_from_values(crowd_df, "selected", 1), "crowd", horizon=1,
-                                 hit_cost=1000, n_keep=n_keep, verbose=False)  # free transfers only
+                                 plan_hit_cost=1000, n_keep=n_keep, verbose=False)  # free transfers only
     logs["myopic_H1"] = S.run_season(df, xp, "myopic_H1", horizon=1, n_keep=n_keep, verbose=False)
     logs["milp_H3"] = S.run_season(df, xp, "milp_H3", horizon=3, n_keep=n_keep, verbose=False)
     logs["perfect_H3"] = S.run_season(df, xp_from_values(df, "points", 3), "perfect_H3", horizon=3,

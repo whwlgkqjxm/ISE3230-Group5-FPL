@@ -174,18 +174,19 @@ The main model was re-run for the full season with H = 1 … 5.
 |---|---|---|---|---|---|
 | Season points | 1,913 | 1,930 | **2,008** | 1,898 | 1,920 |
 
-**Season points rise to a peak at H = 3. Longer horizons (H = 4, 5) score lower.**
+**Among the tested horizons (H = 1–5), season points peak at H = 3. Longer horizons (H = 4, 5)
+score lower.**
 
-- **Rising**: planning ahead prepares for blank and double GWs and avoids transfers that have
-  to be reversed a week later.
-- **Falling**: forecasts further in the future are less accurate, so a longer plan is built on
-  noisier information.
+- **Rising**: H = 3 gains about 100 points over H = 1 in the 33 regular GWs. In the 5 blank and
+  double GWs both score about the same (298 vs 303), so the gain does not come from those weeks.
+- **Falling**: forecasts get less accurate further ahead (correlation with real points 0.55 for the
+  current GW, 0.49 three GWs ahead), and with H = 4–5 the model takes more hits (20–21 vs 13).
 
 The peak is the same when transfers are planned more cautiously (hit cost −6 or −8 in the model;
 the real penalty stays −4): H = 3 is best in every setting, tied with H = 2 at −8
 (`results/sens_horizon_hit.csv`).
 
-**Optimization point: H = 3** (2,008 points)
+**Optimization point: H = 3** (2,008 points, best of H = 1–5 in this season)
 
 ![Optimal horizon](results/figures/fig6_optimal_horizon.png)
 
@@ -195,15 +196,18 @@ the real penalty stays −4): H = 3 is best in every setting, tied with H = 2 at
 |---|---|---|---|
 | Season points | 1,875 | 2,008 | 2,007 |
 
-A smaller budget costs 133 points, but extra budget adds nothing (−1).
+A smaller budget costs 133 points, but extra budget adds nothing (−1). The figure shows the GW1
+model only: its optimal objective as the budget changes from £90m to £110m.
 
 ![Budget](results/figures/fig3_budget_gw1.png)
 
 ### 5.4 Shadow prices and player sensitivity, GW1 model (part D)
 
-- **Shadow price of the budget** (LP relaxation): £1m of extra budget is worth **≈1.43 expected
-  points** over the 3 planned weeks (`results/lp_duals_gw1.csv`). This agrees with the slope of
-  the budget curve above, about 1.2–1.7 points per £1m around £100m.
+- **Shadow price of the budget** (LP relaxation): £1m of extra budget raises the objective
+  (discounted expected points over the 3 planned weeks) by **≈1.43** (`results/lp_duals_gw1.csv`).
+  It is a dual value of the LP relaxation, but for this model the relaxation has the same optimum
+  as the MILP, and the value agrees with the slope of the budget curve above (about 1.2–1.7 per £1m
+  around £100m).
 - **Ban / force-in test** (`results/player_sensitivity_gw1.csv`): re-solve the MILP with one
   player forced out or in.
   - Banning **Salah** lowers the objective most (−5.82). He is the hardest player to replace.
@@ -228,9 +232,9 @@ Each model picks a 15-player squad from scratch, using the GW1 or GW20 forecasts
 ![Expected vs actual](results/figures/fig5_expected_vs_actual.png)
 
 The model expects **64.8** points per GW on average, but the team actually scores **54.2**
-(29 of 38 weeks below expectation; weekly correlation 0.16). The model always picks the players with
-the highest forecasts, so it also picks the forecasts that happened to be too high
-("optimizer's curse"). Forecasts for single players are more accurate (correlation 0.55).
+(29 of 38 weeks below expectation; weekly correlation 0.16). Across all players the forecast is unbiased (−0.03 points
+per player), but for the players the model picks it is 0.96 points too high: choosing the highest
+forecasts also selects the ones that happened to be too high ("optimizer's curse").
 
 ---
 
@@ -264,7 +268,7 @@ python analysis.py G   # (or only some parts: A–G)
 │   ├── raw/            # original files from vaastav/Fantasy-Premier-League
 │   └── processed/      # player_gw.csv, xp.csv
 └── results/
-    ├── season_*.csv    # week-by-week log of every run (squad, XI, captain, transfers, points)
+    ├── season_*.csv    # week-by-week log of every run (squad, XI, bench, captain, vice, transfers, points)
     ├── summary.csv     # strategy comparison
     ├── sens_*.csv, lp_gap_gw1.csv, lp_duals_gw1.csv, player_sensitivity_gw1.csv, model_size_time.csv
     └── figures/        # fig1–fig6
@@ -283,6 +287,8 @@ python analysis.py G   # (or only some parts: A–G)
   The data does not show when each rescheduled match was announced.
 - **Model weights**: the 0.9 discount and 0.1 bench weight in the objective were set by judgment and
   not tuned.
+- **Ownership** (follow the crowd) is the count recorded for each GW in the dataset. We treat it as
+  the ownership at that GW's deadline; the data does not state the exact time it was taken.
 - **One season**: results come from a single season (2025-26). Differences of a few dozen points
   between settings may partly be noise.
 - **Vice-captain** = the starter with the second-highest expected points. **Bench order** = GK
