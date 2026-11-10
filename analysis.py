@@ -7,7 +7,7 @@ Step 6 of the project: post-optimality analysis, figures and tables for the repo
   B. look-ahead H x planned hit cost -> sens_horizon_hit.csv, fig2_sensitivity_heatmap.png
   C. budget                          -> sens_budget_season.csv, sens_budget_gw1.csv, fig3_budget_gw1.png
   D. LP-relaxation shadow prices + ban/force-in test per player (GW1 model)
-                                     -> lp_duals_gw1.csv, player_sensitivity_gw1.csv
+                                     -> lp_gap_gw1.csv, lp_duals_gw1.csv, player_sensitivity_gw1.csv
   E. model size vs solve time        -> model_size_time.csv, fig4_solve_time.png
   F. forecast vs actual (main model) -> fig5_expected_vs_actual.png
   G. optimization point over H      -> fig6_optimal_horizon.png  (uses part B's table)
@@ -62,11 +62,20 @@ def part_a():
     labels = {"milp_H3": "MILP, 3-week look-ahead", "crowd": "Follow the crowd",
               "myopic_H1": "MILP, 1-week look-ahead", "no_transfers": "No transfers"}
     fig, ax = plt.subplots(figsize=(8, 4.5))
+    ends = []
     for i, (key, label) in enumerate(labels.items()):
         log = pd.read_csv(RES / f"season_{key}.csv")
         ax.plot(log.GW, log.total, color=SERIES[i], label=label)
-        ax.annotate(f"{label}  {log.total.iloc[-1]:,}", (log.GW.iloc[-1], log.total.iloc[-1]),
-                    xytext=(6, 0), textcoords="offset points", va="center", fontsize=8.5, color=INK)
+        ends.append([log.total.iloc[-1], f"{label}  {log.total.iloc[-1]:,}"])
+    # end labels: push apart so they never overlap (min gap = 4.5% of the top value)
+    ends.sort()
+    gap = 0.045 * ends[-1][0]
+    label_y = []
+    for y, _ in ends:
+        label_y.append(y if not label_y else max(y, label_y[-1] + gap))
+    for (y, text), ly in zip(ends, label_y):
+        ax.annotate(text, (38, y), xytext=(38.6, ly), textcoords="data", va="center",
+                    fontsize=8.5, color=INK)
     perfect = pd.read_csv(RES / "season_perfect_H3.csv").total.iloc[-1]
     ax.set_title("Cumulative points over the 2025-26 season")
     ax.set_xlabel("Gameweek")
@@ -155,8 +164,10 @@ def part_d(df, xp, n_keep=None):
     lp = milp.relax()
     lp.Params.OutputFlag = 0
     lp.optimize()
-    print(f"  MILP objective {milp.ObjVal:.2f}  |  LP relaxation {lp.ObjVal:.2f}  "
-          f"(gap {100 * (lp.ObjVal - milp.ObjVal) / milp.ObjVal:.2f}%)")
+    gap = 100 * (lp.ObjVal - milp.ObjVal) / milp.ObjVal
+    print(f"  MILP objective {milp.ObjVal:.2f}  |  LP relaxation {lp.ObjVal:.2f}  (gap {gap:.2f}%)")
+    pd.DataFrame([{"milp_objective": round(milp.ObjVal, 4), "lp_relaxation_objective": round(lp.ObjVal, 4),
+                   "gap_percent": round(gap, 4)}]).to_csv(RES / "lp_gap_gw1.csv", index=False)
 
     keep = ("budget_", "squad15_", "quota_", "club_", "xi_", "minform_", "maxform_", "one_captain_")
     duals = pd.DataFrame([{"constraint": c.ConstrName, "shadow_price": round(c.Pi, 4),

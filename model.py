@@ -65,6 +65,7 @@ def solve(t, P, G, xp, cost, sell, pos, club, squad0, bank0, ft0,
     bank = m.addVars(G, lb=0.0, name="bank")
 
     owned = set(squad0)
+    z = {}                              # only created when a club is over the limit (rare)
     sell_value = {p: sell[p] if p in owned else cost[p] for p in P}
 
     # ---------- constraints ----------
@@ -86,11 +87,19 @@ def solve(t, P, G, xp, cost, sell, pos, club, squad0, bank0, ft0,
         m.addConstr(x.sum("*", g) == 15, name=f"squad15_{g}")
         for k, q in QUOTA.items():
             m.addConstr(gp.quicksum(x[p, g] for p in P if pos[p] == k) == q, name=f"quota_{k}_{g}")
-        # (if an owned player moved clubs mid-season we may keep him, but not add more)
-        for cl in set(club.values()):
-            limit = max(CLUB_LIMIT, sum(1 for p in owned if club.get(p) == cl))
-            m.addConstr(gp.quicksum(x[p, g] for p in P if club[p] == cl) <= limit,
-                        name=f"club_{cl}_{g}")
+        # FPL rule: if a real-life transfer leaves us with more than 3 players from a club, we may
+        # keep them, but any transfer we make must bring that club back to 3.
+        #   z[g] = 1 if any transfer is made in GW g;  limit = 3 + excess * (1 - z[g])
+        excess = {cl: sum(1 for p in owned if club.get(p) == cl) - CLUB_LIMIT for cl in set(club.values())}
+        for cl in excess:
+            members = gp.quicksum(x[p, g] for p in P if club[p] == cl)
+            if excess[cl] > 0:
+                if g not in z:
+                    z[g] = m.addVar(vtype=GRB.BINARY, name=f"any_transfer_{g}")
+                    m.addConstr(b.sum("*", g) <= 15 * z[g], name=f"any_transfer_link_{g}")
+                m.addConstr(members <= CLUB_LIMIT + excess[cl] * (1 - z[g]), name=f"club_{cl}_{g}")
+            else:
+                m.addConstr(members <= CLUB_LIMIT, name=f"club_{cl}_{g}")
 
         # starting XI with a valid formation, captain among starters
         m.addConstrs((y[p, g] <= x[p, g] for p in P), name=f"start_in_squad_{g}")

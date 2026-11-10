@@ -56,6 +56,7 @@ def load():
 
 def build_prior(df, ids_now, last):
     """Priors (P(play), points per appearance) using only last season + GW-entry price."""
+    gw1_ids = set(df[(df.GW == 1) & (df.available == 1)].element)
     first = (df[df.available == 1].sort_values("GW")
              .groupby("element").first()[["position", "price"]])
     first = first.join(ids_now.set_index("id"), how="left")
@@ -66,7 +67,8 @@ def build_prior(df, ids_now, last):
 
     for col in ["play", "ppa"]:
         for pos, grp in first.groupby("position"):
-            known = grp.dropna(subset=[col])
+            # fit only on players in the game at GW1 -> uses no information from later GWs
+            known = grp[grp.index.isin(gw1_ids)].dropna(subset=[col])
             slope, intercept = np.polyfit(known["price"], known[col], 1)
             missing = grp[col].isna()
             first.loc[grp.index[missing], col] = intercept + slope * grp.loc[missing, "price"]
@@ -82,7 +84,7 @@ def forecast_all(df, prior, window=WINDOW, k=K_PRIOR, horizon=HORIZON,
     piv = lambda col: df.pivot(index="element", columns="GW", values=col)
     pts, nfix, mins, team, avail = piv("points"), piv("n_fixtures"), piv("minutes"), piv("team"), piv("available")
     fix = nfix * avail                                   # matches the player could have played
-    apps = fix * (mins > 0)                              # matches he actually played
+    apps = piv("apps") * avail                           # matches he actually played (per match)
     team_fix = df.drop_duplicates(["team", "GW"]).set_index(["team", "GW"])["n_fixtures"]
     prior = prior.reindex(pts.index)
 

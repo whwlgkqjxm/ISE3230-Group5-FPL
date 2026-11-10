@@ -1,14 +1,14 @@
 constraint,shadow_price,slack
 one_captain_1,5.8914,0.0
 xi_1,2.6418,0.0
-quota_FWD_1,-2.2339,0.0
+quota_FWD_1,-2.2337,0.0
 quota_MID_1,-2.2156,0.0
 quota_GK_1,-1.9667,0.0
 quota_DEF_1,-1.9545,0.0
-budget_1,1.4393,0.0
+budget_1,1.4303,0.0
 maxform_GK_1,0.5746,0.0
-club_Newcastle_1,0.0,3.0
-club_Man City_1,0.0,2.0
+club_Crystal Palace_1,0.0,2.0
+club_Bournemouth_1,0.0,2.0
 maxform_FWD_1,0.0,0.0
 minform_FWD_1,0.0,-2.0
 maxform_MID_1,0.0,1.0
@@ -17,21 +17,21 @@ maxform_DEF_1,0.0,2.0
 minform_DEF_1,0.0,-0.0
 minform_GK_1,0.0,-0.0
 club_West Ham_1,0.0,2.0
+club_Aston Villa_1,0.0,2.0
+club_Newcastle_1,0.0,3.0
+club_Leeds_1,0.0,3.0
 club_Liverpool_1,0.0,0.0
+club_Burnley_1,0.0,1.0
+club_Nott'm Forest_1,0.0,0.0
+club_Sunderland_1,0.0,3.0
+squad15_1,0.0,0.0
+club_Spurs_1,0.0,3.0
 club_Fulham_1,0.0,3.0
+club_Brighton_1,0.0,3.0
+club_Wolves_1,0.0,3.0
 club_Everton_1,0.0,3.0
 club_Chelsea_1,0.0,3.0
-club_Leeds_1,0.0,3.0
-club_Spurs_1,0.0,3.0
-club_Aston Villa_1,0.0,2.0
-squad15_1,0.0,0.0
 club_Brentford_1,0.0,2.0
-club_Wolves_1,0.0,3.0
-club_Sunderland_1,0.0,3.0
-club_Burnley_1,0.0,1.0
+club_Man City_1,0.0,2.0
 club_Man Utd_1,0.0,2.0
-club_Brighton_1,0.0,3.0
-club_Crystal Palace_1,0.0,2.0
-club_Bournemouth_1,0.0,2.0
 club_Arsenal_1,0.0,3.0
-club_Nott'm Forest_1,0.0,0.0
