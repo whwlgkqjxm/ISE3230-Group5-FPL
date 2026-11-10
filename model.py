@@ -25,6 +25,8 @@ Decision variables (g in G)
   u[g]    free transfers used in GW g             (integer)
   h[g]    paid transfers ("hits", -4 points each) (integer)
   bank[g] money left after GW g transfers         (continuous >= 0)
+  z[g]    1 if any transfer is made in GW g       (binary; only created when a club is over
+          the 3-player limit after a real-life transfer)
 
 Objective
   max  sum_g  d^(g-t) * [ sum_p xp[p,g]*(y[p,g] + c[p,g])            starters + captain bonus
