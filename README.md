@@ -7,7 +7,12 @@ strategy we tested.
 
 ---
 
-## 1. Problem
+## 1. Motivation and problem
+
+FPL is the official fantasy game of the English Premier League. In 2025-26 more than
+**13 million teams** took part, and top managers win prizes such as a 7-night trip to the UK.
+Every week, each manager makes the same decision under uncertainty: pick a team within a budget
+before the matches are played. That makes it a natural fit for integer optimization.
 
 In FPL, a manager has a **£100m budget** to build a **15-player squad**. Before each of the
 38 gameweeks (GWs) the manager decides:
@@ -71,17 +76,12 @@ $$
 \underbrace{n_{\text{club}(p),g}}_{\text{matches in GW } g\ (0,1,2)}
 $$
 
-- **P(play)** is the recency-weighted share of recent club matches the player played in (the
-  last match counts most). In the data, a player who missed his last 2 matches plays the next
-  one only about 5 % of the time.
-- **PPA** is points per appearance over the last 6 GWs.
-- Both are **shrunk toward a prior** taken from last season (2024-25). Players with no PL history
-  get a prior predicted from their price.
-- The **number of matches** comes from the published fixture list, so blank and double GWs are
-  known in advance.
+- **P(play)**: how often the player played in his club's recent matches (recent matches count more)
+- **PPA**: his average points per match played over the last 6 GWs. At the start of the season,
+  last season's (2024-25) numbers are used.
+- **Number of matches**: from the fixture list, so blank and double GWs are known in advance
 
-1-week-ahead accuracy: **correlation 0.55, MAE 1.01 points**. For comparison, FPL's own `xP`
-column in the data reaches 0.34.
+1-week-ahead accuracy: correlation **0.55** with the real points.
 
 ---
 
@@ -109,7 +109,11 @@ $$
 \;+\;0.1\sum_{p}\text{xP}_{p,g}\,(x_{p,g}-y_{p,g}) \;-\; 4\,h_g\Big]
 $$
 
-(starters + captain bonus, a small value for bench cover, minus transfer penalties)
+- xP · (y + c): points of the starting XI, plus the captain counted once more (double)
+- **0.1 × bench**: a small value for bench players, who come in when a starter doesn't play
+  (automatic substitution)
+- **0.9<sup>g−t</sup>**: later weeks count slightly less, because their forecasts are less reliable
+- **−4 h**: penalty for each extra transfer
 
 **Constraints** (for every *g*)
 
@@ -129,8 +133,8 @@ $$
 rolling horizon this is a known constant for every owned player.
 
 **Size.** With all ~700 candidates and H = 3 the model has **≈10,400 variables and ≈10,500
-constraints**. It solves in **0.25–1.4 s**, and the **LP-relaxation gap at GW1 is 0 %**, so the
-formulation is tight.
+constraints**. It solves in **0.25–1.4 s**. For the GW1 model, the LP relaxation gives
+the same objective as the MILP (gap 0 %).
 
 **Scoring** (`simulate.py`) follows real FPL rules:
 
@@ -157,20 +161,15 @@ is unknown.
 
 ![Cumulative points](results/figures/fig1_cumulative_points.png)
 
-### 5.2 Look-ahead H × planned hit cost (`analysis.py`, part B)
+### 5.2 Look-ahead H: optimization point (`analysis.py`, parts B and G)
 
-The real penalty is always −4. The "planned" hit cost makes the model more cautious about
-transfers.
+The main model was re-run for the full season with H = 1 … 5.
 
-| H \ planned hit cost | −4 | −6 | −8 |
-|---|---|---|---|
-| 1 | 1,904 | 1,898 | 1,879 |
-| 2 | 1,952 | 1,957 | 2,003 |
-| **3** | **2,009** | 1,972 | 1,976 |
-| 4 | 1,976 | 1,962 | 1,971 |
-| 5 | 1,955 | 1,932 | 1,965 |
+| Look-ahead H | 1 | 2 | **3** | 4 | 5 |
+|---|---|---|---|---|---|
+| Season points | 1,904 | 1,952 | **2,009** | 1,976 | 1,955 |
 
-**Season points rise, peak at H = 3, then fall** (−4 column: 1,904 → 1,952 → **2,009** → 1,976 → 1,955).
+**Season points rise, peak at H = 3, then fall.**
 
 - **Rising**: planning ahead prepares for blank and double GWs and avoids transfers that have
   to be reversed a week later.
@@ -180,8 +179,6 @@ transfers.
 **Optimization point: H = 3** (2,009 points)
 
 ![Optimal horizon](results/figures/fig6_optimal_horizon.png)
-
-![Sensitivity heatmap](results/figures/fig2_sensitivity_heatmap.png)
 
 ### 5.3 Budget (part C)
 
@@ -195,12 +192,14 @@ A smaller budget costs 112 points, but extra budget adds almost nothing.
 
 ### 5.4 Shadow prices and player sensitivity, GW1 model (part D)
 
-- **LP-relaxation shadow prices**: £1m of extra budget is worth **≈1.44 expected points**; the
-  captain constraint ≈5.89; one more starter ≈2.64 (`results/lp_duals_gw1.csv`).
+- **Shadow price of the budget** (LP relaxation): £1m of extra budget is worth **≈1.44 expected
+  points** over the 3 planned weeks (`results/lp_duals_gw1.csv`). This agrees with the slope of
+  the budget curve above, about 1.4–1.7 points per £1m around £100m.
 - **Ban / force-in test** (`results/player_sensitivity_gw1.csv`): re-solve the MILP with one
   player forced out or in.
   - Banning **Salah** lowers the objective most (−5.82). He is the hardest player to replace.
-  - Forcing **Haaland** in costs −7.59. At GW1 he cannot fit in the budget alongside Salah.
+  - Forcing **Haaland** in costs −7.59. At GW1 his forecast (13.2 points over 3 GWs) is low
+    for his £14.0m price, so the money is better spent elsewhere.
 
 ### 5.5 Model size vs. solve time (part E)
 
