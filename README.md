@@ -2,8 +2,8 @@
 
 A multi-period mixed-integer linear program (MILP), solved with Gurobi, that plays the full
 **2025-26 Fantasy Premier League (FPL)** season week by week and scores every decision with the
-**real** points. Looking 3 gameweeks ahead, it scores **2,008 points**, more than every simpler
-strategy we tested.
+**real** points. With a 3-gameweek look-ahead it scores **1,968 points**: well above never transferring
+or planning only 1 week ahead, but 32 points below simply following the most-owned players.
 
 ---
 
@@ -48,10 +48,12 @@ Source: [vaastav/Fantasy-Premier-League](https://github.com/vaastav/Fantasy-Prem
 | `teams.csv` | 2025-26 | club names |
 | `players_raw_2526.csv` | 2025-26 | player id ↔ code (to link with last season) |
 | `players_raw_2425.csv` | 2024-25 | last season's points and minutes (starting values for GW1) |
+| `fixture_changes.csv` | 2025-26 | the 5 rescheduled matches and when each change was officially announced (compiled by us, with source links) |
 
 | File (`data/processed/`) | Made by | Content |
 |---|---|---|
 | `player_gw.csv` | `data_prep.py` | one row per player × GW (841 players × 38 GWs = 31,958 rows) |
+| `fixtures_known.csv` | `data_prep.py` | matches per club in each future GW, as known at each GW deadline |
 | `xp.csv` | `forecast.py` | expected points made at each GW deadline for the next 8 GWs |
 
 **Data issues handled**
@@ -81,7 +83,9 @@ $$
 - **PPA**: his average points per match played over the last 6 GWs
 - Both are mixed with last season's (2024-25) numbers, which matter most early in the season.
   Players with no PL history last season get a value estimated from their price.
-- **Number of matches**: from the fixture list, so blank and double GWs are known in advance
+- **Number of matches**: from the fixture list **as known at the deadline**. Five matches were moved
+  during the season; a move is used only after it was officially announced. Before that the match
+  stays in its original GW, and while postponed without a new date it counts in no GW.
 
 1-week-ahead accuracy: correlation **0.55** with the real points.
 
@@ -155,48 +159,49 @@ the same objective as the MILP (gap 0 %).
 |---|---|---|
 | No transfers | best GW1 squad (8-week look-ahead), never transfer | 1,459 |
 | MILP, 1-week look-ahead | same model, H = 1 | 1,913 |
+| **MILP, 3-week look-ahead** | **main model, H = 3** | **1,968** |
 | Follow the crowd | move toward the most-owned squad with free transfers | 2,000 |
-| **MILP, 3-week look-ahead** | **main model, H = 3** | **2,008** |
 | Perfect information (reference) | same model fed with the real future points | 4,852 |
 
-The main model is clearly ahead of the no-transfer and 1-week strategies, but only **8 points**
-ahead of following the crowd. Over one season that gap is small, so the two should be seen as
-close. The perfect-information run is **not achievable**. It shows how much is lost because the
+The main model is clearly ahead of the no-transfer and 1-week strategies, but **32 points behind**
+following the crowd. Over one season that gap is small, so the two should be seen as close. The perfect-information run is **not achievable**. It shows how much is lost because the
 future is unknown.
 
 ![Cumulative points](results/figures/fig1_cumulative_points.png)
 
-### 5.2 Look-ahead H: optimization point (`analysis.py`, parts B and G)
+### 5.2 Look-ahead H (`analysis.py`, parts B and G)
 
-The main model was re-run for the full season with H = 1 … 5.
+The model was re-run for the full season with H = 1 … 5. Because a long plan can also over-trade,
+each run was repeated with a higher hit cost **in the plan only** (the real penalty stays −4).
 
-| Look-ahead H | 1 | 2 | **3** | 4 | 5 |
-|---|---|---|---|---|---|
-| Season points | 1,913 | 1,930 | **2,008** | 1,898 | 1,920 |
+| H \ hit cost in the plan | −4 | −6 | −8 |
+|---|---|---|---|
+| 1 | 1,913 | 1,903 | 1,878 |
+| 2 | 1,930 | 1,915 | 1,972 |
+| 3 | 1,968 | 2,002 | **1,986** |
+| 4 | 1,972 | **2,004** | 1,977 |
+| 5 | **2,010** | 1,939 | 1,973 |
 
-**Among the tested horizons (H = 1–5), season points peak at H = 3. Longer horizons (H = 4, 5)
-score lower.**
+- **In every setting, every H ≥ 3 scores more than every H ≤ 2.** Planning at least 3 weeks
+  ahead is better than planning 1–2 weeks ahead in this season.
+- **Which H ≥ 3 is best depends on the setting** (H = 5 at −4, H = 4 at −6, H = 3 at −8), and
+  H = 5 is the largest H tested. With one season, no single best H can be named.
+- With the real hit cost, the gain over H = 1 comes from the 33 regular GWs (H = 3: +79,
+  H = 5: +103); in the 5 blank and double GWs all three score about the same (279–303).
+  Longer plans also take more hits (7, 11, 15, 19, 20 for H = 1 … 5).
 
-- **Rising**: H = 3 gains about 100 points over H = 1 in the 33 regular GWs. In the 5 blank and
-  double GWs both score about the same (298 vs 303), so the gain does not come from those weeks.
-- **Falling**: forecasts get less accurate further ahead (correlation with real points 0.55 for the
-  current GW, 0.49 three GWs ahead), and with H = 4–5 the model takes more hits (20–21 vs 13).
+H = 3 was chosen as the main model before this analysis, and it is kept rather than replaced by the
+best H found afterwards.
 
-The peak is the same when transfers are planned more cautiously (hit cost −6 or −8 in the model;
-the real penalty stays −4): H = 3 is best in every setting, tied with H = 2 at −8
-(`results/sens_horizon_hit.csv`).
-
-**Optimization point: H = 3** (2,008 points, best of H = 1–5 in this season)
-
-![Optimal horizon](results/figures/fig6_optimal_horizon.png)
+![Season points by look-ahead](results/figures/fig6_optimal_horizon.png)
 
 ### 5.3 Budget (part C)
 
 | Budget | £95m | £100m | £105m |
 |---|---|---|---|
-| Season points | 1,875 | 2,008 | 2,007 |
+| Season points | 1,873 | 1,968 | 2,011 |
 
-A smaller budget costs 133 points, but extra budget adds nothing (−1). The figure shows the GW1
+£5m less costs 95 points; £5m more adds 43 points. The figure shows the GW1
 model only: its optimal objective as the budget changes from £90m to £110m.
 
 ![Budget](results/figures/fig3_budget_gw1.png)
@@ -216,15 +221,16 @@ model only: its optimal objective as the budget changes from £90m to £110m.
 
 ### 5.5 Model size vs. solve time (part E)
 
-Each model picks a 15-player squad from scratch, using the GW1 or GW20 forecasts. Times are
-wall-clock and vary slightly between runs (`results/model_size_time.csv`).
+Each model picks a 15-player squad from scratch, using the GW1 or GW20 forecasts. All were solved
+to optimality (MIP gap ≤ 0.01 %, `results/model_size_time.csv`). Times vary between runs; GW20 with
+H = 8 is close to the 60 s time limit (it exceeded it in one earlier run).
 
 | Look-ahead H | Variables (all candidates) | Solve time, GW1 | Solve time, GW20 |
 |---|---|---|---|
-| 1 | ≈3,500–4,000 | 0.02 s | 0.05 s |
-| 3 | ≈10,400–11,900 | 0.21 s | 1.4 s |
-| 5 | ≈17,300–19,800 | 0.64 s | 7.6 s |
-| 8 | ≈27,600–31,600 | 0.34 s | 21.0 s |
+| 1 | ≈3,500–4,000 | 0.02 s | 0.06 s |
+| 3 | ≈10,400–11,900 | 0.21 s | 1.3 s |
+| 5 | ≈17,300–19,800 | 0.63 s | 6.3 s |
+| 8 | ≈27,600–31,600 | 0.36 s | 51.5 s |
 
 ![Solve time](results/figures/fig4_solve_time.png)
 
@@ -232,9 +238,9 @@ wall-clock and vary slightly between runs (`results/model_size_time.csv`).
 
 ![Expected vs actual](results/figures/fig5_expected_vs_actual.png)
 
-The model expects **64.8** points per GW on average, but the team actually scores **54.2**
-(29 of 38 weeks below expectation; weekly correlation 0.16). Across all players the forecast is unbiased (−0.03 points
-per player), but for the players the model picks it is 0.96 points too high: choosing the highest
+The model expects **65.0** points per GW on average, but the team actually scores **53.4**
+(31 of 38 weeks below expectation; weekly correlation 0.21). Across all players the forecast is unbiased
+(−0.03 points per player), but for the players the model picks it is 1.05 points too high: choosing the highest
 forecasts also selects the ones that happened to be too high ("optimizer's curse").
 
 ---
@@ -266,8 +272,8 @@ python analysis.py G   # (or only some parts: A–G)
 ├── baselines.py        # Step 5  comparison strategies
 ├── analysis.py         # Step 6  post-optimality analysis + figures
 ├── data/
-│   ├── raw/            # original files from vaastav/Fantasy-Premier-League
-│   └── processed/      # player_gw.csv, xp.csv
+│   ├── raw/            # original files from vaastav/Fantasy-Premier-League + fixture_changes.csv
+│   └── processed/      # player_gw.csv, fixtures_known.csv, xp.csv
 └── results/
     ├── season_*.csv    # week-by-week log of every run (squad, XI, bench, captain, vice, transfers, points)
     ├── summary.csv     # strategy comparison
@@ -284,8 +290,9 @@ python analysis.py G   # (or only some parts: A–G)
 - **Simple forecast**: it uses past points and minutes only. There is no injury news, team news
   or opponent strength.
 - **Prices are fixed within the planning window**. Real price changes are applied week to week.
-- **Fixture list**: the final 2025-26 fixture list is used to know blank and double GWs in advance.
-  The data does not show when each rescheduled match was announced.
+- **Fixture changes**: announcement dates of the 5 rescheduled matches come from official club and
+  league announcements. A change counts as known if it was announced before the day of the GW's
+  first kick-off (the deadline is compared at day level).
 - **Model weights**: the 0.9 discount and 0.1 bench weight in the objective were set by judgment and
   not tuned.
 - **Ownership** (follow the crowd) is the count recorded for each GW in the dataset. We treat it as
