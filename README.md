@@ -136,7 +136,7 @@ $$
 rolling horizon this is a known constant for every owned player.
 
 **Size.** With all ~700 candidates and H = 3 the model has **≈10,400 variables and ≈10,500
-constraints**. It solves in **0.2–1.0 s**. For the GW1 model, the LP relaxation gives
+constraints**. It solves in **0.2–1.4 s**. For the GW1 model, the LP relaxation gives
 the same objective as the MILP (gap 0 %).
 
 **Scoring** (`simulate.py`) follows real FPL rules:
@@ -216,14 +216,15 @@ model only: its optimal objective as the budget changes from £90m to £110m.
 
 ### 5.5 Model size vs. solve time (part E)
 
-Each model picks a 15-player squad from scratch, using the GW1 or GW20 forecasts.
+Each model picks a 15-player squad from scratch, using the GW1 or GW20 forecasts. Times are
+wall-clock and vary slightly between runs (`results/model_size_time.csv`).
 
 | Look-ahead H | Variables (all candidates) | Solve time, GW1 | Solve time, GW20 |
 |---|---|---|---|
-| 1 | ≈3,500–4,000 | 0.02 s | 0.06 s |
-| 3 | ≈10,400–11,900 | 0.21 s | 1.0 s |
-| 5 | ≈17,300–19,800 | 0.64 s | 6.9 s |
-| 8 | ≈27,600–31,600 | 0.40 s | 22.5 s |
+| 1 | ≈3,500–4,000 | 0.02 s | 0.05 s |
+| 3 | ≈10,400–11,900 | 0.21 s | 1.4 s |
+| 5 | ≈17,300–19,800 | 0.64 s | 7.6 s |
+| 8 | ≈27,600–31,600 | 0.34 s | 21.0 s |
 
 ![Solve time](results/figures/fig4_solve_time.png)
 

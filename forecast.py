@@ -18,7 +18,7 @@ For each future GW g = t, t+1, ..., t+H-1:
 
   Priors come from LAST season (2024-25, same GitHub repo): minutes share and points per
   appearance. Players with no PL history last season get values predicted from their price
-  (linear fit per position on last season's players).
+  (linear fit per position, using only players in the game at GW1 who have last-season data).
 
 Output: data/processed/xp.csv  with columns  decision_gw, element, GW, xp
 """
