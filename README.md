@@ -23,10 +23,6 @@ players from one club). Before each of the 38 gameweeks (GWs) the manager decide
 **Problem.** Maximize total points over the season. The decisions must be made **before** the
 matches are played, so the real points are unknown when deciding.
 
-**Why MILP.** Every choice is yes/no (pick a player or not, start him or not, captain or not),
-the choices are linked by linear constraints (budget, positions, clubs, formation), and the weeks are
-linked through transfers: a player bought this week is still in the squad next week.
-
 **Approach: rolling horizon.** At the deadline of every GW *t*:
 
 1. forecast the expected points of every player for GWs *t … t+H−1*, using only data up to GW *t−1*
@@ -88,16 +84,10 @@ $`x_{p,t-1} = 1`$ if $`p \in S_0`$ (else 0) and $`bank_{t-1} = B_0`$.
 
 ### 3.2 Where the expected points $`xP`$ come from
 
-**Data.** 2025-26 season data from [vaastav/Fantasy-Premier-League](https://github.com/vaastav/Fantasy-Premier-League)
-(real points, prices, minutes, clubs and fixtures), plus last season (2024-25) totals for the start of
-the season. No synthetic data. `data_prep.py` builds one row per player and GW
-(841 players × 38 GWs = 31,958 rows) and handles:
-
-- 10 duplicate rows (same player and match recorded twice), which were removed
-- double GWs (26, 33, 36: two matches, points summed) and blank GWs (31, 34: no match, 0 points)
-- players joining mid-season (not available before their first GW) and 27 players who changed club
-- 5 rescheduled matches: a change is used only after it was officially announced
-  (`data/raw/fixture_changes.csv`), so no future information is used
+**Data.** Real 2025-26 season data from [vaastav/Fantasy-Premier-League](https://github.com/vaastav/Fantasy-Premier-League)
+(points, prices, minutes, clubs and fixtures of 841 players over 38 GWs), plus last season (2024-25)
+totals for the start of the season. No synthetic data. `data_prep.py` cleans it into one row per player
+and GW; in double GWs (two matches) the points are summed, and in blank GWs (no match) they are 0.
 
 **Forecast** (`forecast.py`). At the deadline of GW *t*, using only GWs 1 … *t*−1:
 
@@ -203,9 +193,6 @@ initial squad. GW2 then starts with 1 free transfer.
 - (12) is a big-M constraint with M = 15, the largest possible number of transfers.
 - **Model size:** for GW1 with H = 3 there are 690 candidates, **10,362 variables and 10,469
   constraints**.
-- **Tight formulation:** for the GW1 model the LP relaxation (all binaries relaxed to [0, 1]) has
-  the same optimal value as the MILP (gap 0 %, Section 5.4). This is one reason Gurobi solves each
-  weekly model in about a second.
 
 ---
 
@@ -474,8 +461,6 @@ The full season was re-run with H = 1 … 5 (`results/sens_horizon.csv`).
 
 - Season points rise with H. H = 5 is the best but also the largest H tested, so we can't say
   where the best H is.
-- The gain over H = 1 comes from the 33 regular GWs (H = 3: +79, H = 5: +103). In the 5 blank and
-  double GWs, H = 1, 3 and 5 score about the same (279–303).
 - Longer plans take more hits.
 - H = 3 was chosen as the main model before this analysis, and we kept it.
 
@@ -498,16 +483,17 @@ only 0.19–0.44, because once the best players fit in the budget, more money bu
 ### 5.4 Post-optimality: LP relaxation and shadow prices (GW1 model)
 
 The LP relaxation of the GW1 model has the same optimal value as the MILP: **165.04** for both,
-**gap 0 %** (`results/lp_gap_gw1.csv`). The formulation is tight, so the LP shadow prices are a useful
-guide to the MILP (`results/lp_duals_gw1.csv`). They are marginal values: the change in the objective
-(discounted expected points over the 3 planned weeks) for a small change in the right-hand side.
+**gap 0 %** (`results/lp_gap_gw1.csv`). The formulation is tight (all binaries relaxed to [0, 1] give
+the same optimum), which is one reason Gurobi solves each weekly model in about a second. It also
+makes the LP shadow prices a useful guide to the MILP (`results/lp_duals_gw1.csv`). They are marginal
+values: the change in the objective (discounted expected points over the 3 planned weeks) for a small
+change in the right-hand side.
 
 | Constraint (GW1) | Shadow price | Meaning |
 |---|---|---|
 | Budget (3) | 1.43 | £1m more budget adds about 1.43 expected points |
 | One captain (8) | 5.89 | a second captain would add about 5.89 |
 | 11 starters (6) | 2.64 | a 12th starter would add about 2.64 |
-| Club limits (5) | 0 | Liverpool and Nott'm Forest are at the limit of 3, but a 4th player would add nothing at the margin |
 
 The budget shadow price (1.43) is confirmed by the MILP itself: the slope of the budget curve in
 Section 5.3 around £100m is 1.22–1.74 per £1m.
