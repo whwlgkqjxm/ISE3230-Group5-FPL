@@ -139,9 +139,10 @@ $$
 **Selling price** (FPL rule): purchase price + ½ of any rise, rounded down to £0.1m. In the
 rolling horizon this is a known constant for every owned player.
 
-**Size.** With all ~700 candidates and H = 3 the model has **≈10,400 variables and ≈10,500
-constraints**. It solves in **0.2–1.4 s**. For the GW1 model, the LP relaxation gives
-the same objective as the MILP (gap 0 %).
+**Size.** With all candidates (~700 at GW1) and H = 3 the model has **≈10,400 variables and
+≈10,500 constraints** at GW1 (up to ≈12,600 later, as players join). Each weekly model is built and
+solved in **0.1–1.3 s**; the whole 38-week season takes **about 20 s** (`results/season_milp_H3.csv`).
+For the GW1 model, the LP relaxation gives the same objective as the MILP (gap 0 %).
 
 **Scoring** (`simulate.py`) follows real FPL rules:
 
@@ -169,31 +170,25 @@ future is unknown.
 
 ![Cumulative points](results/figures/fig1_cumulative_points.png)
 
-### 5.2 Look-ahead H (`analysis.py`, parts B and G)
+### 5.2 Look-ahead H (`analysis.py`, part B)
 
-The model was re-run for the full season with H = 1 … 5. Because a long plan can also over-trade,
-each run was repeated with a higher hit cost **in the plan only** (the real penalty stays −4).
+The model was re-run for the full season with H = 1 … 5 (`results/sens_horizon.csv`).
 
-| H \ hit cost in the plan | −4 | −6 | −8 |
-|---|---|---|---|
-| 1 | 1,913 | 1,903 | 1,878 |
-| 2 | 1,930 | 1,915 | 1,972 |
-| 3 | 1,968 | 2,002 | **1,986** |
-| 4 | 1,972 | **2,004** | 1,977 |
-| 5 | **2,010** | 1,939 | 1,973 |
+| Look-ahead H | 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|---|
+| Season points | 1,913 | 1,930 | 1,968 | 1,972 | **2,010** |
+| Hits taken | 7 | 11 | 15 | 19 | 20 |
 
-- **In every setting, every H ≥ 3 scores more than every H ≤ 2.** Planning at least 3 weeks
-  ahead is better than planning 1–2 weeks ahead in this season.
-- **Which H ≥ 3 is best depends on the setting** (H = 5 at −4, H = 4 at −6, H = 3 at −8), and
-  H = 5 is the largest H tested. With one season, no single best H can be named.
-- With the real hit cost, the gain over H = 1 comes from the 33 regular GWs (H = 3: +79,
-  H = 5: +103); in the 5 blank and double GWs all three score about the same (279–303).
-  Longer plans also take more hits (7, 11, 15, 19, 20 for H = 1 … 5).
+- Season points rise with H. H = 5 is the best and also the largest H tested, so a longer
+  horizon might score more; with one season, no single best H can be named.
+- The gain over H = 1 comes from the 33 regular GWs (H = 3: +79, H = 5: +103); in the 5 blank and
+  double GWs all three score about the same (279–303).
+- Longer plans take more hits.
 
 H = 3 was chosen as the main model before this analysis, and it is kept rather than replaced by the
 best H found afterwards.
 
-![Season points by look-ahead](results/figures/fig6_optimal_horizon.png)
+![Season points by look-ahead](results/figures/fig2_optimal_horizon.png)
 
 ### 5.3 Budget (part C)
 
@@ -206,42 +201,15 @@ model only: its optimal objective as the budget changes from £90m to £110m.
 
 ![Budget](results/figures/fig3_budget_gw1.png)
 
-### 5.4 Shadow prices and player sensitivity, GW1 model (part D)
+### 5.4 LP relaxation and shadow prices, GW1 model (part D)
 
-- **Shadow price of the budget** (LP relaxation): £1m of extra budget raises the objective
+- **Integrality gap**: the LP relaxation has the same objective as the MILP (gap 0 %,
+  `results/lp_gap_gw1.csv`).
+- **Shadow price of the budget**: £1m of extra budget raises the objective
   (discounted expected points over the 3 planned weeks) by **≈1.43** (`results/lp_duals_gw1.csv`).
   It is a dual value of the LP relaxation, but for this model the relaxation has the same optimum
   as the MILP, and the value agrees with the slope of the budget curve above (about 1.2–1.7 per £1m
   around £100m).
-- **Ban / force-in test** (`results/player_sensitivity_gw1.csv`): re-solve the MILP with one
-  player forced out or in.
-  - Banning **Salah** lowers the objective most (−5.82). He is the hardest player to replace.
-  - Forcing **Haaland** in costs −7.54. At GW1 his forecast (13.2 points over 3 GWs) is low
-    for his £14.0m price, so the money is better spent elsewhere.
-
-### 5.5 Model size vs. solve time (part E)
-
-Each model picks a 15-player squad from scratch, using the GW1 or GW20 forecasts. All were solved
-to optimality (MIP gap ≤ 0.01 %, `results/model_size_time.csv`). Times vary between runs; GW20 with
-H = 8 is close to the 60 s time limit (it exceeded it in one earlier run).
-
-| Look-ahead H | Variables (all candidates) | Solve time, GW1 | Solve time, GW20 |
-|---|---|---|---|
-| 1 | ≈3,500–4,000 | 0.02 s | 0.06 s |
-| 3 | ≈10,400–11,900 | 0.21 s | 1.3 s |
-| 5 | ≈17,300–19,800 | 0.63 s | 6.3 s |
-| 8 | ≈27,600–31,600 | 0.36 s | 51.5 s |
-
-![Solve time](results/figures/fig4_solve_time.png)
-
-### 5.6 Expected vs. actual points (part F)
-
-![Expected vs actual](results/figures/fig5_expected_vs_actual.png)
-
-The model expects **65.0** points per GW on average, but the team actually scores **53.4**
-(31 of 38 weeks below expectation; weekly correlation 0.21). Across all players the forecast is unbiased
-(−0.03 points per player), but for the players the model picks it is 1.05 points too high: choosing the highest
-forecasts also selects the ones that happened to be too high ("optimizer's curse").
 
 ---
 
@@ -256,8 +224,8 @@ python forecast.py     # expected points -> data/processed/xp.csv               
 python model.py        # demo: optimal GW1 squad                                 (~1 s)
 python simulate.py     # full season with the main model (H = 3)                 (~20 s)
 python baselines.py    # all 5 strategies -> results/summary.csv                 (~1 min)
-python analysis.py     # sensitivity analysis + figures                          (~10–15 min)
-python analysis.py G   # (or only some parts: A–G)
+python analysis.py     # post-optimality analysis + figures                      (~5 min)
+python analysis.py B   # (or only some parts: A–D)
 ```
 
 ---
@@ -277,8 +245,8 @@ python analysis.py G   # (or only some parts: A–G)
 └── results/
     ├── season_*.csv    # week-by-week log of every run (squad, XI, bench, captain, vice, transfers, points)
     ├── summary.csv     # strategy comparison
-    ├── sens_*.csv, lp_gap_gw1.csv, lp_duals_gw1.csv, player_sensitivity_gw1.csv, model_size_time.csv
-    └── figures/        # fig1–fig6
+    ├── sens_horizon.csv, sens_budget_*.csv, lp_gap_gw1.csv, lp_duals_gw1.csv
+    └── figures/        # fig1–fig3
 ```
 
 ---

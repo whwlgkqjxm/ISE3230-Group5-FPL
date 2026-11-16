@@ -83,7 +83,7 @@ def build_prior(df, ids_now, last):
 def forecast_all(df, prior, window=WINDOW, k=K_PRIOR, horizon=HORIZON,
                  play_window=PLAY_WINDOW, decay=PLAY_DECAY, k_play=K_PLAY):
     piv = lambda col: df.pivot(index="element", columns="GW", values=col)
-    pts, nfix, mins, team, avail = piv("points"), piv("n_fixtures"), piv("minutes"), piv("team"), piv("available")
+    pts, nfix, team, avail = piv("points"), piv("n_fixtures"), piv("team"), piv("available")
     fix = nfix * avail                                   # matches the player could have played
     apps = piv("apps") * avail                           # matches he actually played (per match)
     known = pd.read_csv(OUT_DIR / "fixtures_known.csv").set_index(["decision_gw", "team", "GW"])["n_fixtures"]
