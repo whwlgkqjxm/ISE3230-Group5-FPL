@@ -10,31 +10,34 @@ A multi-period mixed-integer linear program (MILP), solved with Gurobi, that pla
 
 ## 1. Introduction and Motivation
 
-**FPL.** Fantasy Premier League is the official fantasy game of the English Premier League. More than
-13 million teams took part in 2025-26, and top managers win prizes such as a seven-night trip to the UK.
-Each manager has a **£100m budget** for a **15-player squad** (2 GK, 5 DEF, 5 MID, 3 FWD, at most 3
-players from one club). Before each of the 38 gameweeks (GWs) the manager decides:
+Fantasy Premier League is one of the biggest fantasy games in the world, with 13.1 million managers
+playing in the 2025-26 season. The managers at the top of the overall ranking win real prizes. The
+champion even gets a seven-night trip to the UK with VIP tickets to two Premier League matches.
+Getting close to that level takes good decisions every week. Each week a manager has to choose which
+11 players to start from their 15-player squad and who will be captain for double points. They also
+need to decide whether a transfer is worth losing 4 points. This might sound simple, but there are
+about 700 players to choose from, which means there are roughly $`10^{28}`$ possible squads that fit
+the £100m budget. A player bought this week also stays in the team for the next weeks, so every
+decision affects the future. All of these choices have to be made before the matches start. Because
+of this, we wanted to see if a math model could make these decisions and help a manager climb closer
+to the top, using only the data available before each deadline.
 
-- which **11 players start**, in a valid formation
-- who is **captain** (his points count double)
-- which players to **buy and sell**. Each GW gives 1 free transfer (unused ones roll over, up to 5);
-  every extra transfer (a "hit") costs **4 points**.
+Each manager starts with a £100m budget for the 15-player squad, which must have 2 goalkeepers,
+5 defenders, 5 midfielders and 3 forwards, with at most 3 players from one club. The 11 starters must
+form a valid formation. There are 38 gameweeks (GWs) in a season. Each GW gives one free transfer that
+can be saved up to 5. Any transfer beyond the free ones costs 4 points.
 
-**Problem.** Maximize total points over the season. The decisions must be made **before** the
-matches are played, so the real points are unknown when deciding.
+**Approach.** Our goal is to maximize the total points over the season while following the FPL rules.
+We use a rolling horizon. At the deadline of every GW *t*, we
 
-**Approach: rolling horizon.** At the deadline of every GW *t*:
-
-1. forecast the expected points of every player for GWs *t … t+H−1*, using only data up to GW *t−1*
+1. forecast the expected points of every player for the next *H* GWs (*t … t+H−1*), using only data up to GW *t−1*
 2. solve the MILP for those *H* weeks
-3. carry out **only the GW-*t*** decisions (squad, starting XI, captain, transfers)
-4. score them with the **real** GW-*t* points, then move to GW *t+1*
+3. carry out only the GW-*t* decisions (squad, starting XI, captain, transfers)
+4. score them with the real GW-*t* points, then move to GW *t+1*
 
-The main model plans **H = 3** weeks ahead. As in our proposal, we compare its real season points with
-simpler strategies and analyze how the result changes with the look-ahead and the budget.
-
-**Main results.** The main model scores **1,968 points**, well above never transferring (1,459) and
-planning only one week ahead (1,913), and 32 points below following the most-owned players (2,000).
+Our main model plans *H* = 3 weeks ahead. As planned in our proposal, we compare its real season
+points with simpler strategies. We also look at how the result changes with the look-ahead and the
+budget.
 
 ---
 
