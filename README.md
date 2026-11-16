@@ -70,16 +70,16 @@ with the second-highest expected points, and the bench is ordered GK first, then
 | Symbol | Meaning |
 |---|---|
 | $`P`$ | candidate players: all players in the game at GW *t* (690 at GW1, up to 841 later) |
-| $`G = \{t, \dots, t+H-1\}`$ | planned gameweeks |
-| $`P_k`$, $`k \in`$ {GK, DEF, MID, FWD} | players of position *k* |
-| $`P_c`$ | players of club *c* |
+| $`G = \{t, \dots, \min(t+H-1,\ 38)\}`$ | planned gameweeks (the plan stops at GW38) |
+| $`P_k,\ k \in \{\text{GK}, \text{DEF}, \text{MID}, \text{FWD}\}`$ | players of position *k* |
+| $`P_c,\ c \in C`$ | players of club *c*, where *C* is the set of the 20 Premier League clubs |
 | $`xP_{p,g}`$ | expected points of *p* in GW *g* (Section 3.2) |
-| $`cost_p`$ | price of *p* at GW *t* (£m) |
-| $`sell_p`$ | selling price of an owned player: purchase price + half of any price rise, rounded down to £0.1m (FPL rule). Equal to $`cost_p`$ for players we don't own |
+| $`cost_p`$ | price of *p* at GW *t* (£m), kept fixed for all planned weeks |
+| $`sell_p`$ | selling price of an owned player: purchase price + half of any price rise, rounded down to £0.1m, or the current price if the price has fallen (FPL rule). Equal to $`cost_p`$ for players we don't own |
 | $`q_k`$ | squad quota: 2, 5, 5, 3 |
 | $`L_k, \; U_k`$ | formation limits in the XI: GK 1–1, DEF 3–5, MID 2–5, FWD 1–3 |
 | $`S_0, \; B_0, \; F_0`$ | state at the deadline of GW *t*: current squad, bank, free transfers |
-| $`e_c`$ | number of our players at club *c* above 3 (only > 0 after a real-life transfer) |
+| $`e_c = \lvert S_0 \cap P_c \rvert - 3`$ | number of our players at club *c* above 3 (only > 0 after a real-life transfer) |
 | $`\delta = 0.9, \; \beta = 0.1, \; \kappa = 4`$ | weekly discount, bench weight, hit cost |
 
 The previous-week values for the first planned week come from the state:
@@ -89,10 +89,10 @@ $`x_{p,t-1} = 1`$ if $`p \in S_0`$ (else 0) and $`bank_{t-1} = B_0`$.
 
 **Data.** Real 2025-26 season data from [vaastav/Fantasy-Premier-League](https://github.com/vaastav/Fantasy-Premier-League)
 (points, prices, minutes, clubs and fixtures of 841 players over 38 GWs), plus last season (2024-25)
-totals for the start of the season. No synthetic data. `data_prep.py` cleans it into one row per player
+totals. No synthetic data. `data_prep.py` cleans it into one row per player
 and GW; in double GWs (two matches) the points are summed, and in blank GWs (no match) they are 0.
 
-**Forecast** (`forecast.py`). At the deadline of GW *t*, using only GWs 1 … *t*−1:
+**Forecast** (`forecast.py`). At the deadline of GW *t*, using only data up to GW *t−1*:
 
 ```math
 xP_{p,g} \;=\; P(\text{play})_{p} \times \text{PPA}_{p} \times n_{\text{club}(p),\,g}
@@ -101,9 +101,9 @@ xP_{p,g} \;=\; P(\text{play})_{p} \times \text{PPA}_{p} \times n_{\text{club}(p)
 - $`P(\text{play})`$: share of his club's matches in the last 4 GWs that he played in, with recent GWs
   weighted more
 - PPA: points per match played over the last 6 GWs
-- $`n`$: number of matches his club plays in GW *g* (0, 1 or 2)
-- Early in the season there is little data, so both values are mixed with last season's numbers.
-  Players with no Premier League history get a value estimated from their price.
+- $`n`$: number of matches his club plays in GW *g* as scheduled at the deadline (0, 1 or 2)
+- Both values are also mixed with last season's numbers, which matters most early in the season when
+  there is little data. Players with no Premier League history get a value estimated from their price.
 
 The 1-week-ahead forecast has a correlation of **0.55** with the real points.
 
@@ -121,7 +121,7 @@ The 1-week-ahead forecast has a correlation of **0.55** with the real points.
 
 ### 3.4 Constraints
 
-For every $`g \in G`$ and $`p \in P`$:
+For every $`g \in G`$ (constraints with *p* hold for every $`p \in P`$):
 
 ```math
 x_{p,g} = x_{p,g-1} + b_{p,g} - s_{p,g} \qquad (1)
@@ -164,7 +164,7 @@ u_g \le ft_g \qquad (10)
 ```
 
 ```math
-ft_t = F_0, \qquad ft_g \le ft_{g-1} - u_{g-1} + 1 \;\; (g > t), \qquad 0 \le ft_g \le 5 \qquad (11)
+ft_t = F_0, \qquad ft_g \le ft_{g-1} - u_{g-1} + 1 \;\; (g > t,\ g \ne 16), \qquad ft_{16} = 5 \;\; (\text{if } 16 \in G), \qquad 0 \le ft_g \le 5 \qquad (11)
 ```
 
 ```math
@@ -183,7 +183,7 @@ ft_t = F_0, \qquad ft_g \le ft_{g-1} - u_{g-1} + 1 \;\; (g > t), \qquad 0 \le ft
 | (8) | one captain, who must start |
 | (9)–(10) | transfers are free up to $`ft_g`$, the rest are hits |
 | (11) | unused free transfers roll over (+1 per week, max 5). FPL gave every manager 5 free transfers in GW16 of 2025-26, so $`ft_{16} = 5`$ |
-| (12) | FPL rule: if a real-life transfer leaves us with 4 players from one club we may keep them, but any transfer we make must bring that club back to 3. $`z_g`$ switches the looser limit off once a transfer is made |
+| (12) | FPL rule: if a real-life transfer leaves us with more than 3 players from one club we may keep them, but any transfer we make must bring that club back to 3. $`z_g`$ switches the looser limit off once a transfer is made |
 
 **GW1.** The squad is picked from scratch: $`S_0 = \emptyset`$, $`B_0 = 100`$. In GW1 constraints (9)–(11)
 do not apply; instead $`u = h = ft = 0`$ and nothing is sold, so the 15 "bought" players are the
