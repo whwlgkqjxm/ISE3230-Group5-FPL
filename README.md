@@ -53,9 +53,9 @@ For every candidate player *p* and every planned gameweek *g* (*t* is the curren
 | $`b_{p,g}`$ | $`\{0, 1\}`$ | 1 if *p* is bought before GW *g* |
 | $`s_{p,g}`$ | $`\{0, 1\}`$ | 1 if *p* is sold before GW *g* |
 | $`ft_g`$ | $`\{0, 1, \dots, 5\}`$ | free transfers available in GW *g* |
-| $`u_g`$ | $`\mathbb{Z}_{\ge 0}`$ | free transfers used in GW *g* |
-| $`h_g`$ | $`\mathbb{Z}_{\ge 0}`$ | paid transfers ("hits") in GW *g* |
-| $`bank_g`$ | $`\mathbb{R}_{\ge 0}`$ | money left after the GW-*g* transfers (£m) |
+| $`u_g`$ | $`\{0, 1, 2, \dots\}`$ | free transfers used in GW *g* (integer) |
+| $`h_g`$ | $`\{0, 1, 2, \dots\}`$ | paid transfers ("hits") in GW *g* (integer) |
+| $`bank_g`$ | $`[0, \infty)`$ | money left after the GW-*g* transfers (£m) |
 | $`z_g`$ | $`\{0, 1\}`$ | 1 if any transfer is made in GW *g*. Only needed when a real-life transfer leaves more than 3 of our players at one club (constraint 12) |
 
 The vice-captain and the bench order are not variables: after solving, the vice-captain is the starter
