@@ -45,18 +45,18 @@ budget.
 
 For every candidate player *p* and every planned gameweek *g* (*t* is the current GW):
 
-| Variable | Type | Meaning |
+| Variable | Domain | Meaning |
 |---|---|---|
-| $`x_{p,g}`$ | binary | 1 if player *p* is in the 15-man squad in GW *g* |
-| $`y_{p,g}`$ | binary | 1 if *p* is in the starting XI |
-| $`c_{p,g}`$ | binary | 1 if *p* is captain |
-| $`b_{p,g}`$ | binary | 1 if *p* is bought before GW *g* |
-| $`s_{p,g}`$ | binary | 1 if *p* is sold before GW *g* |
-| $`ft_g`$ | integer, 0–5 | free transfers available in GW *g* |
-| $`u_g`$ | integer ≥ 0 | free transfers used in GW *g* |
-| $`h_g`$ | integer ≥ 0 | paid transfers ("hits") in GW *g* |
-| $`bank_g`$ | continuous ≥ 0 | money left after the GW-*g* transfers (£m) |
-| $`z_g`$ | binary | 1 if any transfer is made in GW *g*. Only needed when a real-life transfer leaves more than 3 of our players at one club (constraint 12) |
+| $`x_{p,g}`$ | $`\{0, 1\}`$ | 1 if player *p* is in the 15-man squad in GW *g* |
+| $`y_{p,g}`$ | $`\{0, 1\}`$ | 1 if *p* is in the starting XI |
+| $`c_{p,g}`$ | $`\{0, 1\}`$ | 1 if *p* is captain |
+| $`b_{p,g}`$ | $`\{0, 1\}`$ | 1 if *p* is bought before GW *g* |
+| $`s_{p,g}`$ | $`\{0, 1\}`$ | 1 if *p* is sold before GW *g* |
+| $`ft_g`$ | $`\{0, 1, \dots, 5\}`$ | free transfers available in GW *g* |
+| $`u_g`$ | $`\mathbb{Z}_{\ge 0}`$ | free transfers used in GW *g* |
+| $`h_g`$ | $`\mathbb{Z}_{\ge 0}`$ | paid transfers ("hits") in GW *g* |
+| $`bank_g`$ | $`\mathbb{R}_{\ge 0}`$ | money left after the GW-*g* transfers (£m) |
+| $`z_g`$ | $`\{0, 1\}`$ | 1 if any transfer is made in GW *g*. Only needed when a real-life transfer leaves more than 3 of our players at one club (constraint 12) |
 
 The vice-captain and the bench order are not variables: after solving, the vice-captain is the starter
 with the second-highest expected points, and the bench is ordered GK first, then by expected points.
