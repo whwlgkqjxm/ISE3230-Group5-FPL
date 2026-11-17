@@ -1,20 +1,17 @@
 """
 analysis.py
 -----------
-Step 6 of the project: post-optimality analysis, figures and tables for the report.
+Step 6 of the project: figures and the post-optimality analysis for the report.
 
-  A. strategy comparison             -> fig1_cumulative_points.png
-  B. look-ahead H = 1..5 (full season) -> sens_horizon.csv, fig2_optimal_horizon.png
-  C. budget                          -> sens_budget_season.csv, sens_budget_gw1.csv, fig3_budget_gw1.png
-  D. LP relaxation: gap and shadow prices (GW1 model) -> lp_gap_gw1.csv, lp_duals_gw1.csv
+  A. strategy comparison                                  -> fig1_cumulative_points.png
+  B. post-optimality: look-ahead H = 1..10 (full season)  -> sens_horizon.csv, fig2_optimal_horizon.png
 
-Run:  python analysis.py          (everything, ~5 min)
-      python analysis.py A D      (only some parts)
+Run:  python analysis.py          (both parts, ~20 min)
+      python analysis.py A        (only one part)
 Needs results/season_*.csv from baselines.py for part A.
 """
 import sys
 from pathlib import Path
-import numpy as np
 import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
@@ -54,7 +51,7 @@ def save(fig, name):
 def part_a():
     """Cumulative points of the realistic strategies (perfect information is reported in the table only)."""
     labels = {"milp_H3": "MILP, 3-week look-ahead", "crowd": "Follow the crowd",
-              "myopic_H1": "MILP, 1-week look-ahead", "no_transfers": "No transfers"}
+              "no_transfers": "No transfers"}
     fig, ax = plt.subplots(figsize=(8, 4.5))
     ends = []
     for i, (key, label) in enumerate(labels.items()):
@@ -83,7 +80,7 @@ def part_a():
 
 
 # --------------------------------------------------------------------------- B
-def part_b(df, xp, horizons=(1, 2, 3, 4, 5), n_keep=None):
+def part_b(df, xp, horizons=range(1, 11), n_keep=None):
     """Full-season total for each look-ahead H (hit cost -4)."""
     rows = []
     for H in horizons:
@@ -127,70 +124,11 @@ def plot_horizon(tab):
     save(fig, "fig2_optimal_horizon.png")
 
 
-# --------------------------------------------------------------------------- C
-def part_c(df, xp, season_budgets=(95, 100, 105), gw1_budgets=np.arange(90, 110.5, 1), n_keep=None):
-    rows = []
-    for bud in season_budgets:
-        log = S.run_season(df, xp, f"sens_budget{bud}", horizon=3, budget=float(bud),
-                           n_keep=n_keep, verbose=False)
-        rows.append({"budget": bud, "total_points": int(log.points.sum())})
-    pd.DataFrame(rows).to_csv(RES / "sens_budget_season.csv", index=False)
-    print(pd.DataFrame(rows).to_string(index=False))
-
-    # parametric analysis of the GW1 model: optimal expected points vs. budget
-    P, G, xpd, price, pos, club, _ = M.build_inputs(df, xp, 1, 3, n_keep=n_keep)
-    gw1 = []
-    for bud in gw1_budgets:
-        r = M.solve(1, P, G, xpd, price, price, pos, club, [], float(bud), 0)
-        gw1.append({"budget": float(bud), "objective": round(r["objective"], 2)})
-    gw1 = pd.DataFrame(gw1)
-    gw1["marginal_per_1m"] = gw1.objective.diff().round(2)
-    gw1.to_csv(RES / "sens_budget_gw1.csv", index=False)
-
-    fig, ax = plt.subplots(figsize=(7, 4))
-    ax.plot(gw1.budget, gw1.objective, color=SERIES[0], marker="o", markersize=4)
-    base = gw1.loc[gw1.budget == 100, "objective"].iloc[0]
-    ax.annotate(f"£100m: {base:.1f}", (100, base), xytext=(8, -14), textcoords="offset points",
-                fontsize=8.5, color=INK)
-    ax.set_title("GW1 model: optimal expected points vs. budget")
-    ax.set_xlabel("Budget (£m)")
-    ax.set_ylabel("Objective (discounted expected points, 3 GWs)")
-    save(fig, "fig3_budget_gw1.png")
-
-
-# --------------------------------------------------------------------------- D
-def part_d(df, xp, n_keep=None):
-    """LP relaxation of the GW1 model: integrality gap and shadow prices of the main constraints."""
-    P, G, xpd, price, pos, club, _ = M.build_inputs(df, xp, 1, 3, n_keep=n_keep)
-    r = M.solve(1, P, G, xpd, price, price, pos, club, [], 100.0, 0)
-    milp = r["model"]
-    lp = milp.relax()
-    lp.Params.OutputFlag = 0
-    lp.optimize()
-    gap = 100 * (lp.ObjVal - milp.ObjVal) / milp.ObjVal
-    print(f"  MILP objective {milp.ObjVal:.2f}  |  LP relaxation {lp.ObjVal:.2f}  (gap {gap:.2f}%)")
-    pd.DataFrame([{"milp_objective": round(milp.ObjVal, 4), "lp_relaxation_objective": round(lp.ObjVal, 4),
-                   "gap_percent": round(gap, 4)}]).to_csv(RES / "lp_gap_gw1.csv", index=False)
-
-    keep = ("budget_", "squad15_", "quota_", "club_", "xi_", "minform_", "maxform_", "one_captain_")
-    duals = pd.DataFrame([{"constraint": c.ConstrName, "shadow_price": round(c.Pi, 4),
-                           "slack": round(c.Slack, 4)}
-                          for c in lp.getConstrs() if c.ConstrName.startswith(keep)])
-    duals = duals[duals.constraint.str.endswith("_1")]          # GW1 constraints
-    duals = duals.reindex(duals.shadow_price.abs().sort_values(ascending=False).index)
-    duals.to_csv(RES / "lp_duals_gw1.csv", index=False)
-    print(duals.head(12).to_string(index=False))
-    lp.dispose()
-    milp.dispose()
-
-
 if __name__ == "__main__":
-    parts = [a.upper() for a in sys.argv[1:]] or list("ABCD")
+    parts = [a.upper() for a in sys.argv[1:]] or list("AB")
     df, xp = load()
     RES.mkdir(exist_ok=True)
     for p in parts:
         print(f"\n=== part {p} ===")
         if p == "A": part_a()
         if p == "B": part_b(df, xp)
-        if p == "C": part_c(df, xp)
-        if p == "D": part_d(df, xp)

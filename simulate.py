@@ -102,6 +102,7 @@ def run_season(df, xp, name="milp_H3", horizon=3, hit_cost=M.HIT_COST, plan_hit_
                      "buys": ", ".join(pname[p] for p in r["buys"]) if t > 1 else "",
                      "sells": ", ".join(pname[p] for p in r["sells"]),
                      "n_vars": r["n_vars"], "n_constrs": r["n_constrs"], "solve_time": round(solve_time, 3),
+                     "optimal": r["optimal"],
                      "squad": "; ".join(pname[p] for p in squad),
                      "lineup": "; ".join(pname[p] for p in r["lineup"]),
                      "vice": pname[vice], "bench": "; ".join(pname[p] for p in r["bench"]),
@@ -122,7 +123,8 @@ def run_season(df, xp, name="milp_H3", horizon=3, hit_cost=M.HIT_COST, plan_hit_
     OUT_DIR.mkdir(exist_ok=True)
     log.to_csv(OUT_DIR / f"season_{name}.csv", index=False)
     print(f"\n[{name}] season total: {total} points  (hits taken: {log.hits.sum()}, "
-          f"transfers: {log.transfers.sum()}, solve time: {log.solve_time.sum():.1f}s)")
+          f"transfers: {log.transfers.sum()}, solve time: {log.solve_time.sum():.1f}s, "
+          f"GWs not solved to optimality: {list(log.GW[~log.optimal]) or 'none'})")
     return log
 
 

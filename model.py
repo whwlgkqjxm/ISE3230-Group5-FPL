@@ -157,7 +157,8 @@ def solve(t, P, G, xp, cost, sell, pos, club, squad0, bank0, ft0,
         "buys": on(b), "sells": on(s),
         "hits": int(round(h[g].X)), "free_used": int(round(u[g].X)),
         "bank": bank[g].X, "objective": m.ObjVal, "runtime": m.Runtime,
-        "n_vars": m.NumVars, "n_constrs": m.NumConstrs, "model": m,
+        "n_vars": m.NumVars, "n_constrs": m.NumConstrs, "optimal": m.Status == GRB.OPTIMAL,
+        "model": m,
     }
 
 

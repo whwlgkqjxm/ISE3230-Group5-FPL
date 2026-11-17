@@ -37,7 +37,7 @@ K_PRIOR = 4    # K: weight of the prior, in "matches"
 PLAY_DECAY = 0.5   # weight of a match 1 week older (for P(play))
 PLAY_WINDOW = 4    # past GWs used for P(play)
 K_PLAY = 0.5       # weight of the prior for P(play)
-HORIZON = 8    # longest look-ahead we will ever need
+HORIZON = 10   # longest look-ahead we will ever need
 
 
 def load():

@@ -4,13 +4,12 @@ baselines.py
 Step 5 of the project: compare our MILP strategy with simpler strategies.
 All strategies are scored the same way (simulate.py, real points, real FPL rules).
 
-  1. no_transfers   pick the best squad at GW1 (8-week look-ahead) and never transfer;
-                    only the weekly XI and captain are chosen
+  1. no_transfers   pick the best squad at GW1 (10-week look-ahead, the longest forecast)
+                    and never transfer; only the weekly XI and captain are chosen
   2. crowd          "follow the crowd": each week move toward the most-owned valid squad
                     using free transfers only (ownership at the deadline replaces xP)
-  3. myopic_H1      our MILP, but it only looks 1 week ahead
-  4. milp_H3        our MILP with a 3-week look-ahead (main model)
-  5. perfect_H3     same MILP fed with the REAL future points (not achievable in reality;
+  3. milp_H3        our MILP with a 3-week look-ahead (main model)
+  4. perfect_H3     same MILP fed with the REAL future points (not achievable in reality;
                     shows how much is lost because the future is unknown)
 
 Output: results/season_<strategy>.csv for each strategy + results/summary.csv
@@ -44,7 +43,7 @@ def ownership(df):
     return out
 
 
-def run_all(n_keep=None, hold_horizon=8):
+def run_all(n_keep=None, hold_horizon=10):
     df = pd.read_csv("data/processed/player_gw.csv")
     xp = pd.read_csv("data/processed/xp.csv")
     logs = {}
@@ -54,7 +53,6 @@ def run_all(n_keep=None, hold_horizon=8):
     crowd_df = ownership(df)
     logs["crowd"] = S.run_season(df, xp_from_values(crowd_df, "selected", 1), "crowd", horizon=1,
                                  plan_hit_cost=1000, n_keep=n_keep, verbose=False)  # free transfers only
-    logs["myopic_H1"] = S.run_season(df, xp, "myopic_H1", horizon=1, n_keep=n_keep, verbose=False)
     logs["milp_H3"] = S.run_season(df, xp, "milp_H3", horizon=3, n_keep=n_keep, verbose=False)
     logs["perfect_H3"] = S.run_season(df, xp_from_values(df, "points", 3), "perfect_H3", horizon=3,
                                       n_keep=n_keep, verbose=False)
