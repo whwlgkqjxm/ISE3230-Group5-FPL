@@ -39,10 +39,11 @@ We use a rolling horizon. At the deadline of every GW *t*, we
 Each week the MILP maximizes the expected points of the planned GWs, minus the hit penalties. The
 season total is what we get when those decisions are scored with the real points.
 
-Our main model plans *H* = 3 GWs at each deadline (this week and the next two). We call *H* the
-look-ahead. We set it at the start and did not tune it. As planned in our proposal, we compare the
-real season points of the main model with simpler strategies, such as never making a transfer. Then,
-as a post-optimality analysis, we change *H* from 1 to 10 and check how the season points change.
+*H* is the number of GWs the model plans ahead. Our model uses *H* = 3 (this week and the next two).
+We chose this number at the start and did not tune it. In the results we first show what our model
+did over the season and how many points it scored. As planned in our proposal, we then compare its
+points with simpler strategies, such as never making a transfer. Finally, as a post-optimality
+analysis, we change *H* from 1 to 10 and check how the season points change.
 
 ---
 
@@ -78,7 +79,7 @@ with the second-highest expected points, and the bench is ordered GK first, then
 | Symbol | Meaning |
 |---|---|
 | $`P`$ | candidate players: all players in the game at the current GW (690 at GW1, up to 841 later) |
-| $`G = \{t, \dots, \min(t+H-1,\ 38)\}`$ | planned GWs. *t* is the current GW and *H* is the look-ahead (*H* = 3 in the main model). The plan stops at GW38 |
+| $`G = \{t, \dots, \min(t+H-1,\ 38)\}`$ | planned GWs. *t* is the current GW and *H* is the number of GWs planned ahead (3 in our model). The plan stops at GW38 |
 | $`P_k,\ k \in \{\text{GK}, \text{DEF}, \text{MID}, \text{FWD}\}`$ | players of position *k* |
 | $`P_c,\ c \in C`$ | players of club *c*, where *C* is the set of the 20 Premier League clubs |
 | $`xP_{p,g}`$ | expected points of *p* in GW *g* (Section 3.4) |
@@ -231,7 +232,7 @@ The project runs in six steps, one file each:
 | 3 | `model.py` | builds and solves the MILP (Section 3) |
 | 4 | `simulate.py` | plays the season with the rolling horizon and scores it with the real points |
 | 5 | `baselines.py` | runs the comparison strategies |
-| 6 | `analysis.py` | post-optimality analysis and figures |
+| 6 | `analysis.py` | decision table, figures and post-optimality analysis |
 
 ### 4.1 Expected points (`forecast.py`)
 
@@ -425,7 +426,7 @@ for t in range(1, N_GW + 1):
 ### 4.9 Comparison strategies (`baselines.py`)
 
 All strategies use the same simulation and scoring. They differ only in what the model is given.
-"No transfers" allows no transfers after GW1 and picks its GW1 squad with a 10-GW look-ahead, the
+"No transfers" allows no transfers after GW1 and picks its GW1 squad by looking 10 GWs ahead, the
 longest forecast we have. "Follow the crowd" replaces $`xP`$ with ownership (how many FPL managers have
 the player in their team) and allows free transfers only (a hit cost of 1,000 in the plan).
 "Perfect information" replaces $`xP`$ with the real points.
@@ -441,7 +442,7 @@ logs["perfect_H3"] = S.run_season(df, xp_from_values(df, "points", 3), "perfect_
                                   n_keep=n_keep, verbose=False)
 ```
 
-### 4.10 Post-optimality: look-ahead H (`analysis.py`)
+### 4.10 Post-optimality: number of GWs planned ahead (`analysis.py`)
 
 The whole season is played again for every *H* from 1 to 10 with the same code. Only the number of
 planned GWs changes.
@@ -458,45 +459,66 @@ for H in horizons:
 
 ## 5. Results
 
-### 5.1 Strategy comparison
+### 5.1 What our model did over the season
+
+Our model planned 3 GWs ahead at every deadline and finished the season with **1,968 points**. Each
+week it chose the squad, the starting XI, the captain and the transfers. The table below sums up what
+it did. Every week's team and transfers are listed in
+[`results/season_milp_H3.md`](results/season_milp_H3.md).
+
+| | Over the 38 GWs |
+|---|---|
+| Season points | **1,968** (2,028 before the 60 points lost to hits) |
+| Transfers | 56, at least one in every GW from GW2 |
+| Hits | 15 (−60 points), in 11 different GWs |
+| Free transfers | always used, never saved. The 5 free transfers given in GW16 were all used that week |
+| Captain | 16 different players. Haaland 7 times, Salah 6 times |
+| Expected vs real points of the starting XI | 2,469 expected, 2,028 real (hit penalties not included in either) |
+| Solve time | 0.1–1.4 s per GW. Every GW was solved to optimality |
+
+- In GW1 the model spent the whole £100m. It took 3 players each from Liverpool and Nott'm Forest,
+  the most the rules allow.
+- It filled the bench with the cheapest players (£4.0–4.5m) and spent the money on the starting XI,
+  because bench players count only 10 % in the objective.
+- Its starting XI scored 18 % less than expected (2,028 vs 2,469), so the forecast is too optimistic.
+
+### 5.2 Strategy comparison
 
 Every strategy plays all 38 GWs and is scored with the real points (`results/summary.csv`).
 
 | Strategy | Description | Season points | Transfers | Hits | Captain points (before doubling) |
 |---|---|---|---|---|---|
-| No transfers | best GW1 squad (10-week look-ahead), never transfer | 1,459 | 0 | 0 | 155 |
-| **MILP, H = 3** | **main model** | **1,968** | 56 | 15 | 190 |
-| Follow the crowd | move toward the most-owned squad, free transfers only | 2,000 | 41 | 0 | 159 |
-| Perfect information (reference) | same model with the real points of the next 3 GWs | 4,852 | 245 | 204 | 653 |
+| No transfers | picks the best GW1 squad and never changes it | 1,459 | 0 | 0 | 155 |
+| **Our model** | **plans 3 GWs ahead (Sections 2–3)** | **1,968** | 56 | 15 | 190 |
+| Follow the crowd | copies the players most FPL managers own, using free transfers only | 2,000 | 41 | 0 | 159 |
+| Perfect information (not possible in reality) | our model, given the real points of the next 3 GWs instead of the forecast | 4,852 | 245 | 204 | 653 |
 
 ![Cumulative points](results/figures/fig1_cumulative_points.png)
 
-- **Transfers matter.** Never transferring scores 509 points less than the main model.
-- **Follow the crowd is 32 points ahead.** Before hit penalties the main model scores 2,028
-  (1,968 + 15 × 4), more than the crowd's 2,000. The difference comes from the 15 hits the model takes.
-  The model's captains score more (190 vs 159). Ownership may also reflect news our forecast doesn't
+- **Transfers matter.** Never transferring scores 509 points less than our model.
+- **Follow the crowd is 32 points ahead.** Before hit penalties our model scores 2,028
+  (1,968 + 15 × 4), more than the crowd's 2,000. The difference comes from the 15 hits our model takes.
+  Our model's captains score more (190 vs 159). Ownership may also reflect news our forecast doesn't
   use, such as injuries and team selection.
 - **Perfect information is not achievable.** It shows the score if the next 3 GWs were known
   exactly. The large gap (4,852 vs 1,968) means the limit is the forecast, not the optimization.
-- **Efficiency.** Each weekly model is built and solved in 0.1–1.4 s, and the whole 38-week season
-  takes about 21 s (`results/season_milp_H3.csv`).
 
-### 5.2 Post-optimality: look-ahead H
+### 5.3 Post-optimality: number of GWs planned ahead
 
-The main model plans 3 GWs, a value we set at the start. To see how this choice affects the result,
-the full season was played again for *H* = 1 … 10 (`results/sens_horizon.csv`). The objective value
+Our model plans 3 GWs ahead, a number we chose at the start. To see how this choice affects the
+result, the full season was played again with *H* = 1 … 10 (`results/sens_horizon.csv`). The objective value
 can't be used to compare different *H*, because a longer plan adds more weeks to the sum and so always
 has a larger objective. We compare the real season points instead.
 
-| Look-ahead *H* | 1 | 2 | **3 (main)** | 4 | **5** | 6 | 7 | 8 | 9 | 10 |
+| GWs planned ahead (*H*) | 1 | 2 | **3 (our model)** | 4 | **5** | 6 | 7 | 8 | 9 | 10 |
 |---|---|---|---|---|---|---|---|---|---|---|
 | Season points | 1,913 | 1,930 | 1,968 | 1,972 | **2,010** | 1,919 | 1,959 | 1,963 | 1,939 | 1,939 |
 | Hits taken | 7 | 11 | 15 | 19 | 20 | 21 | 23 | 22 | 26 | 23 |
 | Season solve time (s) | 4 | 10 | 21 | 38 | 67 | 120 | 137 | 182 | 278 | 366 |
 
-![Season points by look-ahead](results/figures/fig2_optimal_horizon.png)
+![Season points by number of GWs planned ahead](results/figures/fig2_optimal_horizon.png)
 
-- **H = 5 scores the most**, 2,010 points. That is 42 more than the main model and 10 more than
+- **Planning 5 GWs ahead scores the most**, 2,010 points. That is 42 more than our model and 10 more than
   following the crowd.
 - **A longer plan is not always better.** After H = 5 the points drop to 1,919 and then go up and down.
   The curve is not smooth, so part of the differences between values of H is likely noise from one
@@ -505,12 +527,12 @@ has a larger objective. We compare the real season points instead.
   H = 10 the slowest week takes 50 s, close to the 60 s time limit, but every week was still solved to
   optimality.
 
-### 5.3 Conclusion and limitations
+### 5.4 Conclusion and limitations
 
-The main model (H = 3) scores 1,968 points, 509 more than never transferring and 32 fewer than
-following the crowd. The post-optimality analysis shows that planning 5 GWs instead raises the score to
-2,010, about the same as the crowd. The large gap to perfect information shows that a better forecast
-would help more than a different H.
+Our model, planning 3 GWs ahead, scores 1,968 points. That is 509 more than never transferring and
+32 fewer than following the crowd. The post-optimality analysis shows that planning 5 GWs ahead
+instead raises the score to 2,010, about the same as the crowd. The large gap to perfect information
+shows that a better forecast would help more than a different number of planned GWs.
 
 Limitations:
 
@@ -518,7 +540,8 @@ Limitations:
 - **Simple forecast** from past points and minutes only: no injury news, team news or opponent strength.
 - **Prices are fixed** within the planning window. Real price changes are applied week to week.
 - The discount (0.9) and bench weight (0.1) were set by judgment, not tuned.
-- **H = 5 was found on the same season it is scored on**, so its 2,010 points may be optimistic.
+- **Planning 5 GWs ahead was found best on the same season it is scored on**, so its 2,010 points may
+  be optimistic.
 - **One season only**, so differences of a few dozen points may partly be noise.
 
 ---
@@ -532,9 +555,9 @@ license**. The free pip license is limited to 2,000 variables, which is too smal
 python data_prep.py    # clean data -> data/processed/player_gw.csv, fixtures_known.csv   (~10 s)
 python forecast.py     # expected points -> data/processed/xp.csv                          (~10 s)
 python model.py        # demo: optimal GW1 squad                                           (~1 s)
-python simulate.py     # full season with the main model (H = 3)                           (~20 s)
+python simulate.py     # full season with our model (plans 3 GWs ahead)                     (~20 s)
 python baselines.py    # all 4 strategies -> results/summary.csv                           (~1 min)
-python analysis.py     # figures + post-optimality analysis on H = 1..10                   (~20 min)
+python analysis.py     # decision table, figures, post-optimality analysis on H = 1..10    (~20 min)
 python analysis.py A   # (or only one part: A or B)
 ```
 
@@ -553,6 +576,7 @@ python analysis.py A   # (or only one part: A or B)
 └── results/
     ├── season_*.csv    # week-by-week log of every run (squad, XI, bench, captain, vice, transfers,
     │                   #   points, solve time, whether Gurobi proved optimality)
+    ├── season_milp_H3.md # our model's season as a readable table
     ├── summary.csv     # strategy comparison
     ├── sens_horizon.csv  # post-optimality analysis on H
     └── figures/        # fig1–fig2

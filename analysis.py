@@ -3,8 +3,8 @@ analysis.py
 -----------
 Step 6 of the project: figures and the post-optimality analysis for the report.
 
-  A. strategy comparison                                  -> fig1_cumulative_points.png
-  B. post-optimality: look-ahead H = 1..10 (full season)  -> sens_horizon.csv, fig2_optimal_horizon.png
+  A. decisions of our model, strategy comparison         -> season_milp_H3.md, fig1_cumulative_points.png
+  B. post-optimality: H = 1..10 GWs planned ahead         -> sens_horizon.csv, fig2_optimal_horizon.png
 
 Run:  python analysis.py          (both parts, ~20 min)
       python analysis.py A        (only one part)
@@ -16,7 +16,6 @@ import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import model as M
 import simulate as S
 
 RES = Path("results")
@@ -48,9 +47,29 @@ def save(fig, name):
 
 
 # --------------------------------------------------------------------------- A
+def season_table(name="milp_H3"):
+    """Week-by-week decisions of one run as a readable Markdown table."""
+    log = pd.read_csv(RES / f"season_{name}.csv").fillna("")
+    pos = pd.read_csv("data/processed/player_gw.csv").set_index(["GW", "name"])["position"]
+    order = {"GK": 0, "DEF": 1, "MID": 2, "FWD": 3}
+    lines = ["| GW | Starting XI (C = captain, V = vice-captain) | Bench | Bought | Sold | Free transfers "
+             "| Hits | Bank (£m) | Expected | Points | Total |",
+             "|---|---|---|---|---|---|---|---|---|---|---|"]
+    for r in log.itertuples():
+        players = sorted(r.lineup.split("; "), key=lambda p: order[pos[r.GW, p]])
+        xi = [f"{p} (C)" if p == r.captain else f"{p} (V)" if p == r.vice else p for p in players]
+        lines.append(f"| {r.GW} | {', '.join(xi)} | {r.bench.replace('; ', ', ')} | {r.buys} | {r.sells} "
+                     f"| {r.free_transfers} | {r.hits} | {r.bank:.1f} | {r.expected} | {r.points} | {r.total} |")
+    title = ("# Our model (plans 3 GWs ahead): what it did each GW\n\nOne row per gameweek. Expected = expected points of the "
+             "starting XI with the captain counted twice. Points = real points after automatic "
+             "substitutions and hit penalties.\n\n")
+    (RES / f"season_{name}.md").write_text(title + "\n".join(lines) + "\n")
+    print(f"  saved {RES / f'season_{name}.md'}")
+
+
 def part_a():
     """Cumulative points of the realistic strategies (perfect information is reported in the table only)."""
-    labels = {"milp_H3": "MILP, H = 3 (main model)", "crowd": "Follow the crowd",
+    labels = {"milp_H3": "Our model (plans 3 GWs ahead)", "crowd": "Follow the crowd",
               "no_transfers": "No transfers"}
     fig, ax = plt.subplots(figsize=(8, 4.5))
     ends = []
@@ -81,7 +100,7 @@ def part_a():
 
 # --------------------------------------------------------------------------- B
 def part_b(df, xp, horizons=range(1, 11), n_keep=None):
-    """Full-season total for each look-ahead H (hit cost -4)."""
+    """Full-season total for each number of GWs planned ahead, H (hit cost -4)."""
     rows = []
     for H in horizons:
         log = S.run_season(df, xp, f"sens_H{H}", horizon=H, n_keep=n_keep, verbose=False)
@@ -96,7 +115,7 @@ def part_b(df, xp, horizons=range(1, 11), n_keep=None):
 
 
 def plot_horizon(tab, main_h=3):
-    """Season points vs. look-ahead H, with the main model and the best tested H highlighted."""
+    """Season points vs. H, with our model (H = 3) and the best tested H highlighted."""
     s = tab.sort_values("horizon")
     best = s.loc[s.total_points.idxmax()]
     main = s.loc[s.horizon == main_h].iloc[0]
@@ -106,22 +125,22 @@ def plot_horizon(tab, main_h=3):
     ax.scatter([best.horizon], [best.total_points], s=160, color=SERIES[0],
                edgecolor=SURFACE, linewidth=2, zorder=3)
     at_edge = best.horizon == s.horizon.max()
-    label = "Best of tested H" + (" (largest H tested)" if at_edge else "")
+    label = "Best" + (" (largest H tested)" if at_edge else "")
     ax.annotate(f"{label}\nH = {int(best.horizon)}  ({int(best.total_points):,} pts)",
                 (best.horizon, best.total_points), xytext=(6 if at_edge else 0, 14), textcoords="offset points",
                 fontsize=9.5, fontweight="bold", color=INK, va="bottom", ha="right" if at_edge else "center")
     if main.horizon != best.horizon:
         ax.scatter([main.horizon], [main.total_points], s=160, color=SERIES[1],
                    edgecolor=SURFACE, linewidth=2, zorder=3)
-        ax.annotate(f"Main model\nH = {int(main.horizon)}  ({int(main.total_points):,} pts)",
+        ax.annotate(f"Our model\nH = {int(main.horizon)}  ({int(main.total_points):,} pts)",
                     (main.horizon, main.total_points), xytext=(0, 14), textcoords="offset points",
                     fontsize=9.5, fontweight="bold", color=SERIES[1], va="bottom", ha="center")
     for row in s.itertuples():
         if row.horizon not in (best.horizon, main.horizon):
             ax.annotate(f"{int(row.total_points):,}", (row.horizon, row.total_points), xytext=(0, -16),
                         textcoords="offset points", ha="center", fontsize=8.5, color=MUTED)
-    ax.set_title(f"Season points vs. look-ahead horizon (hit cost -{M.HIT_COST})")
-    ax.set_xlabel("Look-ahead H (gameweeks planned at each deadline)")
+    ax.set_title("Season points by number of GWs planned ahead")
+    ax.set_xlabel("H, number of GWs planned ahead at each deadline")
     ax.set_ylabel("Season points")
     ax.set_xticks(s.horizon)
     span = s.total_points.max() - s.total_points.min()
@@ -137,5 +156,7 @@ if __name__ == "__main__":
     RES.mkdir(exist_ok=True)
     for p in parts:
         print(f"\n=== part {p} ===")
-        if p == "A": part_a()
+        if p == "A":
+            season_table()
+            part_a()
         if p == "B": part_b(df, xp)
