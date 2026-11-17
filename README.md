@@ -24,7 +24,8 @@ to the top, using only the data available before each deadline.
 
 Each manager starts with a £100m budget for the 15-player squad, which must have 2 goalkeepers,
 5 defenders, 5 midfielders and 3 forwards, with at most 3 players from one club. The 11 starters must
-form a valid formation. There are 38 gameweeks (GWs) in a season. Each GW gives one free transfer that
+form a valid formation, with exactly 1 goalkeeper and at least 3 defenders, 2 midfielders and
+1 forward. There are 38 gameweeks (GWs) in a season. Each GW gives one free transfer that
 can be saved up to 5. Any transfer beyond the free ones costs 4 points.
 
 **Approach.** Our goal is to maximize the total points over the season while following the FPL rules.
@@ -54,11 +55,14 @@ For every candidate player *p* and every planned gameweek *g* (*t* is the curren
 | $`s_{p,g}`$ | $`\{0, 1\}`$ | 1 if *p* is sold before GW *g* |
 | $`ft_g`$ | $`\{0, 1, \dots, 5\}`$ | free transfers available in GW *g* |
 | $`u_g`$ | $`\{0, 1, 2, \dots\}`$ | free transfers used in GW *g* (integer) |
-| $`h_g`$ | $`\{0, 1, 2, \dots\}`$ | paid transfers ("hits") in GW *g* (integer) |
+| $`h_g`$ | $`\{0, 1, 2, \dots\}`$ | number of hits in GW *g* (integer). A hit is a transfer made after the free transfers are used up. Each hit costs 4 points. |
 | $`bank_g`$ | $`[0, \infty)`$ | money left after the GW-*g* transfers (£m) |
-| $`z_g`$ | $`\{0, 1\}`$ | 1 if any transfer is made in GW *g*. Only needed when a real-life transfer leaves more than 3 of our players at one club (constraint 12) |
+| $`z_g`$ | $`\{0, 1\}`$ | 1 if any transfer is made in GW *g*. Only needed when a real-life transfer (one of our players moving to another Premier League club during the season) leaves us with more than 3 players from one club (constraint 12) |
 
-The vice-captain and the bench order are not variables: after solving, the vice-captain is the starter
+The 4 squad players who don't start are the bench. A bench player comes on when a starter doesn't
+play, as long as the team still has a valid formation. The vice-captain gets double points if the
+captain doesn't play. The vice-captain and the bench order are not variables. After solving, the
+vice-captain is the starter
 with the second-highest expected points, and the bench is ordered GK first, then by expected points.
 
 ---
@@ -398,7 +402,8 @@ for t in range(1, N_GW + 1):
 ### 4.9 Comparison strategies (`baselines.py`)
 
 All strategies use the same simulation and scoring. They differ only in what the model is given:
-"follow the crowd" replaces $`xP`$ with ownership and allows free transfers only (a hit cost of 1,000
+"follow the crowd" replaces $`xP`$ with ownership (how many FPL managers have the player in their
+team) and allows free transfers only (a hit cost of 1,000
 in the plan), and "perfect information" replaces $`xP`$ with the real points.
 
 ```python
