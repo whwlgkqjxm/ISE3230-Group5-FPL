@@ -95,10 +95,11 @@ def part_b(df, xp, horizons=range(1, 11), n_keep=None):
     return tab
 
 
-def plot_horizon(tab):
-    """Season points vs. look-ahead H, with the best tested H highlighted."""
+def plot_horizon(tab, main_h=3):
+    """Season points vs. look-ahead H, with the main model and the best tested H highlighted."""
     s = tab.sort_values("horizon")
     best = s.loc[s.total_points.idxmax()]
+    main = s.loc[s.horizon == main_h].iloc[0]
 
     fig, ax = plt.subplots(figsize=(7, 4.2))
     ax.plot(s.horizon, s.total_points, color=SERIES[0], marker="o", markersize=7)
@@ -109,8 +110,14 @@ def plot_horizon(tab):
     ax.annotate(f"{label}\nH = {int(best.horizon)}  ({int(best.total_points):,} pts)",
                 (best.horizon, best.total_points), xytext=(6 if at_edge else 0, 14), textcoords="offset points",
                 fontsize=9.5, fontweight="bold", color=INK, va="bottom", ha="right" if at_edge else "center")
+    if main.horizon != best.horizon:
+        ax.scatter([main.horizon], [main.total_points], s=160, color=SERIES[1],
+                   edgecolor=SURFACE, linewidth=2, zorder=3)
+        ax.annotate(f"Main model\nH = {int(main.horizon)}  ({int(main.total_points):,} pts)",
+                    (main.horizon, main.total_points), xytext=(0, 14), textcoords="offset points",
+                    fontsize=9.5, fontweight="bold", color=SERIES[1], va="bottom", ha="center")
     for row in s.itertuples():
-        if row.horizon != best.horizon:
+        if row.horizon not in (best.horizon, main.horizon):
             ax.annotate(f"{int(row.total_points):,}", (row.horizon, row.total_points), xytext=(0, -16),
                         textcoords="offset points", ha="center", fontsize=8.5, color=MUTED)
     ax.set_title(f"Season points vs. look-ahead horizon (hit cost -{M.HIT_COST})")
