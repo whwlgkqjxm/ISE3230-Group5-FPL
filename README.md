@@ -107,6 +107,16 @@ xP_{p,g} \;=\; P(\text{play})_{p} \times \text{PPA}_{p} \times n_{\text{club}(p)
 
 The 1-week-ahead forecast has a correlation of **0.55** with the real points.
 
+**Expected points at GW1.** At the first deadline there is no 2025-26 data yet, so $`P(\text{play})`$
+and PPA come only from last season's data (`players_raw.csv` of 2024-25 from the same source).
+
+- $`P(\text{play})`$ = minutes played last season ÷ (38 × 90), but at least 0.05
+- PPA = points last season ÷ (matches played + 2), where matches played is estimated from his starts
+  and minutes. The +2 keeps a player who played only a few matches from looking too good.
+- 178 of the 690 players at GW1 were not in the Premier League last season. For them, we estimate both
+  values from their price, using the link between price and last-season numbers among the other
+  players in the same position (players with a higher price usually scored more).
+
 ### 3.3 Objective
 
 ```math
@@ -185,15 +195,14 @@ ft_t = F_0, \qquad ft_g \le ft_{g-1} - u_{g-1} + 1 \;\; (g > t,\ g \ne 16), \qqu
 | (11) | unused free transfers roll over (+1 per week, max 5). FPL gave every manager 5 free transfers in GW16 of 2025-26, so $`ft_{16} = 5`$ |
 | (12) | FPL rule: if a real-life transfer leaves us with more than 3 players from one club we may keep them, but any transfer we make must bring that club back to 3. $`z_g`$ switches the looser limit off once a transfer is made |
 
-**GW1.** The squad is picked from scratch: $`S_0 = \emptyset`$, $`B_0 = 100`$. In GW1 constraints (9)–(11)
-do not apply; instead $`u = h = ft = 0`$ and nothing is sold, so the 15 "bought" players are the
-initial squad. GW2 then starts with 1 free transfer.
+**GW1.** The squad is picked from scratch, so $`S_0`$ is empty (no players yet) and $`B_0 = 100`$.
+In GW1 constraints (9)–(11) do not apply; instead $`u = h = ft = 0`$ and nothing is sold, so the 15
+"bought" players are the initial squad. GW2 then starts with 1 free transfer.
 
 **Remarks.**
 
 - In (11) the real rule is an equality. "≤" gives the same optimal value, because having more free
   transfers never lowers the objective.
-- (12) is a big-M constraint with M = 15, the largest possible number of transfers.
 - **Model size:** for GW1 with H = 3 there are 690 candidates, **10,362 variables and 10,469
   constraints**.
 
