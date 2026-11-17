@@ -82,7 +82,7 @@ with the second-highest expected points, and the bench is ordered GK first, then
 | $`G = \{t, \dots, \min(t+H-1,\ 38)\}`$ | planned GWs. *t* is the current GW and *H* is the number of GWs planned ahead (3 in our model). The plan stops at GW38 |
 | $`P_k,\ k \in \{\text{GK}, \text{DEF}, \text{MID}, \text{FWD}\}`$ | players of position *k* |
 | $`P_c,\ c \in C`$ | players of club *c*, where *C* is the set of the 20 Premier League clubs |
-| $`xP_{p,g}`$ | expected points of *p* in GW *g* (Section 3.4) |
+| $`xP_{p,g}`$ | expected points of *p* in GW *g*  |
 | $`cost_p`$ | price of *p* at GW *t* (£m), kept fixed for all planned weeks |
 | $`sell_p`$ | selling price of an owned player: purchase price + half of any price rise, rounded down to £0.1m, or the current price if the price has fallen (FPL rule). Equal to $`cost_p`$ for players we don't own |
 | $`q_k`$ | squad quota: 2, 5, 5, 3 |
