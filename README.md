@@ -26,7 +26,7 @@ Each manager starts with a £100m budget for the 15-player squad, which must hav
 5 defenders, 5 midfielders and 3 forwards, with at most 3 players from one club. The 11 starters must
 form a valid formation, with exactly 1 goalkeeper and at least 3 defenders, 2 midfielders and
 1 forward. There are 38 gameweeks (GWs) in a season. Each GW gives one free transfer that
-can be saved up to 5. Any transfer beyond the free ones costs 4 points.
+can be saved up to 5. Any transfer beyond the free ones costs 4 points, which is called a hit.
 
 **Approach.** Our goal is to maximize the total points over the season while following the FPL rules.
 We use a rolling horizon. At the deadline of every GW *t*, we
@@ -39,16 +39,16 @@ We use a rolling horizon. At the deadline of every GW *t*, we
 Each week the MILP maximizes the expected points of the planned GWs, minus the hit penalties. The
 season total is what we get when those decisions are scored with the real points.
 
-Our main model plans *H* = 3 GWs at each deadline (this week and the next two). We set this value at
-the start and did not tune it. As planned in our proposal, we compare the real season points of the
-main model with simpler strategies. Then, as a post-optimality analysis, we change *H* from 1 to 10
-and check how the season points change.
+Our main model plans *H* = 3 GWs at each deadline (this week and the next two). We call *H* the
+look-ahead. We set it at the start and did not tune it. As planned in our proposal, we compare the
+real season points of the main model with simpler strategies, such as never making a transfer. Then,
+as a post-optimality analysis, we change *H* from 1 to 10 and check how the season points change.
 
 ---
 
 ## 2. Decision Variables
 
-For every candidate player *p* and every planned gameweek *g* (*t* is the current GW):
+For every candidate player *p* and every planned gameweek *g* (the sets are defined in Section 3.1):
 
 | Variable | Domain | Meaning |
 |---|---|---|
@@ -77,11 +77,11 @@ with the second-highest expected points, and the bench is ordered GK first, then
 
 | Symbol | Meaning |
 |---|---|
-| $`P`$ | candidate players: all players in the game at GW *t* (690 at GW1, up to 841 later) |
-| $`G = \{t, \dots, \min(t+H-1,\ 38)\}`$ | planned gameweeks (the plan stops at GW38) |
+| $`P`$ | candidate players: all players in the game at the current GW (690 at GW1, up to 841 later) |
+| $`G = \{t, \dots, \min(t+H-1,\ 38)\}`$ | planned GWs. *t* is the current GW and *H* is the look-ahead (*H* = 3 in the main model). The plan stops at GW38 |
 | $`P_k,\ k \in \{\text{GK}, \text{DEF}, \text{MID}, \text{FWD}\}`$ | players of position *k* |
 | $`P_c,\ c \in C`$ | players of club *c*, where *C* is the set of the 20 Premier League clubs |
-| $`xP_{p,g}`$ | expected points of *p* in GW *g* (Section 3.2) |
+| $`xP_{p,g}`$ | expected points of *p* in GW *g* (Section 3.4) |
 | $`cost_p`$ | price of *p* at GW *t* (£m), kept fixed for all planned weeks |
 | $`sell_p`$ | selling price of an owned player: purchase price + half of any price rise, rounded down to £0.1m, or the current price if the price has fallen (FPL rule). Equal to $`cost_p`$ for players we don't own |
 | $`q_k`$ | squad quota: 2, 5, 5, 3 |
@@ -93,39 +93,7 @@ with the second-highest expected points, and the bench is ordered GK first, then
 The previous-week values for the first planned week come from the state:
 $`x_{p,t-1} = 1`$ if $`p \in S_0`$ (else 0) and $`bank_{t-1} = B_0`$.
 
-### 3.2 Where the expected points $`xP`$ come from
-
-**Data.** Real 2025-26 season data from [vaastav/Fantasy-Premier-League](https://github.com/vaastav/Fantasy-Premier-League)
-(points, prices, minutes, clubs and fixtures of 841 players over 38 GWs), plus last season (2024-25)
-totals. No synthetic data. `data_prep.py` cleans it into one row per player
-and GW; in double GWs (two matches) the points are summed, and in blank GWs (no match) they are 0.
-
-**Forecast** (`forecast.py`). At the deadline of GW *t*, using only data up to GW *t−1*:
-
-```math
-xP_{p,g} \;=\; P(\text{play})_{p} \times \text{PPA}_{p} \times n_{\text{club}(p),\,g}
-```
-
-- $`P(\text{play})`$: share of his club's matches in the last 4 GWs that he played in, with recent GWs
-  weighted more
-- PPA: points per match played over the last 6 GWs
-- $`n`$: number of matches his club plays in GW *g* as scheduled at the deadline (0, 1 or 2)
-- Both values are also mixed with last season's numbers, which matters most early in the season when
-  there is little data. Players with no Premier League history get a value estimated from their price.
-
-The 1-week-ahead forecast has a correlation of **0.55** with the real points.
-
-**Expected points at GW1.** At the first deadline there is no 2025-26 data yet, so $`P(\text{play})`$
-and PPA come only from last season's data (`players_raw.csv` of 2024-25 from the same source).
-
-- $`P(\text{play})`$ = minutes played last season ÷ (38 × 90), but at least 0.05
-- PPA = points last season ÷ (matches played + 2), where matches played is estimated from his starts
-  and minutes. The +2 keeps a player who played only a few matches from looking too good.
-- 178 of the 690 players at GW1 were not in the Premier League last season. For them, we estimate both
-  values from their price, using the link between price and last-season numbers among the other
-  players in the same position (players with a higher price usually scored more).
-
-### 3.3 Objective
+### 3.2 Objective
 
 ```math
 \max \; \sum_{g \in G} \delta^{\,g-t} \Big[ \sum_{p \in P} xP_{p,g}\,(y_{p,g} + c_{p,g})
@@ -135,9 +103,10 @@ and PPA come only from last season's data (`players_raw.csv` of 2024-25 from the
 - $`xP\,(y + c)`$: points of the starting XI; the captain is counted once more, so he scores double
 - $`\beta\,xP\,(x - y)`$: a small value for bench players, who come on when a starter doesn't play
 - $`\kappa\,h`$: 4 points for every hit
-- $`\delta^{g-t}`$: later weeks count slightly less, because their forecasts are less reliable
+- $`\delta^{g-t}`$: the *H* planned GWs are added up, and later weeks count slightly less because their
+  forecasts are less reliable
 
-### 3.4 Constraints
+### 3.3 Constraints
 
 For every $`g \in G`$ (constraints with *p* hold for every $`p \in P`$):
 
@@ -214,6 +183,41 @@ In GW1 constraints (9)–(11) do not apply; instead $`u = h = ft = 0`$ and nothi
 - **Model size:** for GW1 with H = 3 there are 690 candidates, **10,362 variables and 10,469
   constraints**.
 
+### 3.4 Where the expected points $`xP`$ come from
+
+**Data.** Real 2025-26 season data from [vaastav/Fantasy-Premier-League](https://github.com/vaastav/Fantasy-Premier-League)
+(points, prices, minutes, clubs and fixtures of 841 players over 38 GWs), plus last season (2024-25)
+totals. No synthetic data. `data_prep.py` cleans it into one row per player
+and GW; in double GWs (two matches) the points are summed, and in blank GWs (no match) they are 0.
+
+**Forecast** (`forecast.py`). At the deadline of GW *t*, using only data up to GW *t−1*:
+
+```math
+xP_{p,g} \;=\; P(\text{play})_{p} \times \text{PPA}_{p} \times n_{\text{club}(p),\,g}
+```
+
+- $`P(\text{play})`$: share of his club's matches in the last 4 GWs that he played in, with recent GWs
+  weighted more
+- PPA: points per match played over the last 6 GWs
+- $`n`$: number of matches his club plays in GW *g* as scheduled at the deadline (0, 1 or 2)
+- Both values are also mixed with last season's numbers, which matters most early in the season when
+  there is little data. Players with no Premier League history get a value estimated from their price.
+
+$`P(\text{play})`$ and PPA are computed once at the deadline, so every planned GW uses the same two
+values. Only $`n`$ changes from week to week.
+
+The 1-week-ahead forecast has a correlation of **0.55** with the real points.
+
+**Expected points at GW1.** At the first deadline there is no 2025-26 data yet, so $`P(\text{play})`$
+and PPA come only from last season's data (`players_raw.csv` of 2024-25 from the same source).
+
+- $`P(\text{play})`$ = minutes played last season ÷ (38 × 90), but at least 0.05
+- PPA = points last season ÷ (matches played + 2), where matches played is estimated from his starts
+  and minutes. The +2 keeps a player who played only a few matches from looking too good.
+- 178 of the 690 players at GW1 were not in the Premier League last season. For them, we estimate both
+  values from their price, using the link between price and last-season numbers among the other
+  players in the same position (players with a higher price usually scored more).
+
 ---
 
 ## 4. Code
@@ -223,7 +227,7 @@ The project runs in six steps, one file each:
 | Step | File | What it does |
 |---|---|---|
 | 1 | `data_prep.py` | cleans the raw data into one table (player × GW) |
-| 2 | `forecast.py` | expected points $`xP`$ (Section 3.2) |
+| 2 | `forecast.py` | expected points $`xP`$ (Section 3.4) |
 | 3 | `model.py` | builds and solves the MILP (Section 3) |
 | 4 | `simulate.py` | plays the season with the rolling horizon and scores it with the real points |
 | 5 | `baselines.py` | runs the comparison strategies |
@@ -232,8 +236,10 @@ The project runs in six steps, one file each:
 ### 4.1 Expected points (`forecast.py`)
 
 Points per match played (PPA) and the chance to play are each mixed with last season's value
-(`prior`), which acts like a few extra matches of data. Their product times the number of matches
-gives $`xP`$.
+(`prior`), which acts like a few extra matches of data (`k` = 4 and `k_play` = 0.5 matches).
+`p_sum` and `a_sum` are a player's points and matches played over the last 6 GWs. `num` and `den` are
+the matches he played and the matches he could have played over the last 4 GWs, with recent GWs
+weighted more. `nf` is the number of matches his club plays in GW *g*, so `rate * nf` is $`xP`$.
 
 ```python
 ppa = (p_sum + k * prior["ppa"]) / (a_sum + k)
@@ -351,7 +357,7 @@ else:
             m.addConstr(ft[g] <= 1)
 ```
 
-### 4.7 Objective and solve (Section 3.3)
+### 4.7 Objective and solve (Section 3.2)
 
 `discount ** i` is $`\delta^{g-t}`$, `bench_w` is $`\beta`$, `hit_cost` is $`\kappa`$.
 
@@ -383,7 +389,8 @@ the time limit, so every weekly decision is optimal for its model (column `optim
 
 Each GW: build the inputs from the current squad, solve, carry out only the GW-*t* transfers, then
 score the team with the real points. `score_gw` applies the FPL rules: captain double (vice-captain if
-the captain doesn't play) and automatic substitutions from the bench.
+the captain doesn't play) and automatic substitutions from the bench. `plan_hit_cost` is used only by
+"follow the crowd" (Section 4.9). The real score always takes 4 points per hit.
 
 ```python
 for t in range(1, N_GW + 1):
@@ -455,7 +462,7 @@ for H in horizons:
 
 Every strategy plays all 38 GWs and is scored with the real points (`results/summary.csv`).
 
-| Strategy | Description | Season points | Transfers | Hits | Captain points |
+| Strategy | Description | Season points | Transfers | Hits | Captain points (before doubling) |
 |---|---|---|---|---|---|
 | No transfers | best GW1 squad (10-week look-ahead), never transfer | 1,459 | 0 | 0 | 155 |
 | **MILP, H = 3** | **main model** | **1,968** | 56 | 15 | 190 |
@@ -467,7 +474,7 @@ Every strategy plays all 38 GWs and is scored with the real points (`results/sum
 - **Transfers matter.** Never transferring scores 509 points less than the main model.
 - **Follow the crowd is 32 points ahead.** Before hit penalties the main model scores 2,028
   (1,968 + 15 × 4), more than the crowd's 2,000. The difference comes from the 15 hits the model takes.
-  Its captain choices score more (190 vs 159). Ownership may also reflect news our forecast doesn't
+  The model's captains score more (190 vs 159). Ownership may also reflect news our forecast doesn't
   use, such as injuries and team selection.
 - **Perfect information is not achievable.** It shows the score if the next 3 GWs were known
   exactly. The large gap (4,852 vs 1,968) means the limit is the forecast, not the optimization.
@@ -497,8 +504,6 @@ has a larger objective. We compare the real season points instead.
 - **Longer plans take more hits and more time.** Hits rise from 7 at H = 1 to 20–26 for H ≥ 5. At
   H = 10 the slowest week takes 50 s, close to the 60 s time limit, but every week was still solved to
   optimality.
-- H = 5 was found with the results of the same season it is scored on, so it may not be the best H in
-  another season.
 
 ### 5.3 Conclusion and limitations
 

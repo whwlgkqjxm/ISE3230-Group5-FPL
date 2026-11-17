@@ -50,7 +50,7 @@ def save(fig, name):
 # --------------------------------------------------------------------------- A
 def part_a():
     """Cumulative points of the realistic strategies (perfect information is reported in the table only)."""
-    labels = {"milp_H3": "MILP, 3-week look-ahead", "crowd": "Follow the crowd",
+    labels = {"milp_H3": "MILP, H = 3 (main model)", "crowd": "Follow the crowd",
               "no_transfers": "No transfers"}
     fig, ax = plt.subplots(figsize=(8, 4.5))
     ends = []
