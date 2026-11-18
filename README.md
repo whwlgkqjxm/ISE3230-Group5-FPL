@@ -489,9 +489,9 @@ Every strategy plays all 38 GWs and is scored with the real points (`results/sum
 | Strategy | Description | Season points | Transfers | Hits | Captain points (before doubling) |
 |---|---|---|---|---|---|
 | No transfers | picks the best GW1 squad and never changes it | 1,459 | 0 | 0 | 155 |
-| **Our model** | **plans 3 GWs ahead (Sections 2–3)** | **1,968** | 56 | 15 | 190 |
+| **Our model** | **plans 3 GWs ahead** | **1,968** | 56 | 15 | 190 |
 | Follow the crowd | copies the players most FPL managers own, using free transfers only | 2,000 | 41 | 0 | 159 |
-| Perfect information (not possible in reality) | our model, given the real points of the next 3 GWs instead of the forecast | 4,852 | 245 | 204 | 653 |
+| Perfect information (not possible in reality) | Same MILP, but uses the real points of the next 3 GWs instead of expected points | 4,852 | 245 | 204 | 653 |
 
 ![Cumulative points](results/figures/fig1_cumulative_points.png)
 
