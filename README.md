@@ -485,7 +485,7 @@ it did. Every week's team and transfers are listed in
 | Free transfers | always used, never saved. The 5 free transfers given in GW16 were all used that week |
 | Captain | 16 different players. Haaland 7 times, Salah 6 times |
 | Expected vs real points of the starting XI | 2,469 expected, 2,028 real (hit penalties not included in either) |
-| Solve time | 0.1–1.4 s per GW. Every GW was solved to optimality |
+| Solve time | 0.1–1.3 s per GW. Every GW was solved to optimality |
 
 - In GW1 the model spent the whole £100m. It took 3 players each from Liverpool and Nott'm Forest,
   the most the rules allow.
@@ -525,7 +525,7 @@ has a larger objective. We compare the real season points instead.
 |---|---|---|---|---|---|---|---|---|---|---|
 | Season points | 1,913 | 1,930 | 1,968 | 1,972 | **2,010** | 1,919 | 1,959 | 1,963 | 1,939 | 1,939 |
 | Hits taken | 7 | 11 | 15 | 19 | 20 | 21 | 23 | 22 | 26 | 23 |
-| Season solve time (s) | 4 | 10 | 21 | 38 | 67 | 120 | 137 | 182 | 278 | 366 |
+| Season solve time (s) | 3 | 9 | 19 | 37 | 61 | 100 | 126 | 222 | 318 | 354 |
 
 ![Season points by number of GWs planned ahead](results/figures/fig2_optimal_horizon.png)
 
@@ -535,8 +535,7 @@ has a larger objective. We compare the real season points instead.
   The curve is not smooth, so part of the differences between values of H is likely noise from one
   season.
 - **Longer plans take more hits and more time.** Hits rise from 7 at H = 1 to 20–26 for H ≥ 5. At
-  H = 10 the slowest week takes 50 s, close to the 60 s time limit, but every week was still solved to
-  optimality.
+  H = 10 the slowest week takes 56 s, but every week was still solved to optimality.
 
 ### 5.4 Conclusion and limitations
 
