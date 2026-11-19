@@ -1,61 +1,66 @@
 """
 model.py
 --------
-Step 3 of the project: the multi-gameweek MILP (solved with gurobipy).
+Step 3 of 6: the MILP that chooses the team at one gameweek (GW) deadline, solved with Gurobi.
 
-At the deadline of GW t we plan GWs  G = {t, ..., t+H-1}  and later only carry out
-the decisions for GW t (rolling horizon, see simulate.py).
+At the deadline of GW t the model plans the GWs  G = {t, ..., t+H-1}.  Only the decisions for
+GW t are carried out. The rest of the plan is made again at the next deadline (rolling horizon,
+see simulate.py).
 
-Sets / data
-  P            candidate players (available at t)
-  G            planning gameweeks
-  xp[p,g]      expected points (forecast.py)
-  cost[p]      buy price at t (£m)          sell[p]  selling price at t (£m)
-  pos[p], club[p]
-  squad0       current 15 players (empty before GW1)
-  bank0        money in the bank,   ft0  free transfers available at t
+Data
+  P             candidate players (all players in the game at GW t)
+  G             planned GWs
+  xp[p,g]       expected points of player p in GW g (forecast.py)
+  cost[p]       price of p at GW t (£m)
+  sell[p]       selling price of p at GW t (£m)
+  pos[p]        position: GK, DEF, MID or FWD
+  club[p]       club
+  squad0        current squad of 15 players (empty before GW1)
+  bank0         money in the bank (£m)
+  ft0           free transfers available at GW t
 
-Decision variables (g in G)
-  x[p,g]  1 if p is in the 15-man squad          (binary)
-  y[p,g]  1 if p is in the starting 11            (binary)
-  c[p,g]  1 if p is captain                       (binary)
-  b[p,g]  1 if p is bought before GW g            (binary)
-  s[p,g]  1 if p is sold before GW g              (binary)
-  ft[g]   free transfers available in GW g        (integer 0..5)
-  u[g]    free transfers used in GW g             (integer)
-  h[g]    paid transfers ("hits", -4 points each) (integer)
-  bank[g] money left after GW g transfers         (continuous >= 0)
-  z[g]    1 if any transfer is made in GW g       (binary; only created when a club is over
-          the 3-player limit after a real-life transfer)
+Decision variables (for every g in G)
+  x[p,g]   1 if p is in the 15-player squad        (binary)
+  y[p,g]   1 if p is in the starting XI            (binary)
+  c[p,g]   1 if p is the captain                   (binary)
+  b[p,g]   1 if p is bought before GW g            (binary)
+  s[p,g]   1 if p is sold before GW g              (binary)
+  ft[g]    free transfers available in GW g        (integer, 0..5)
+  u[g]     free transfers used in GW g             (integer)
+  h[g]     hits: transfers beyond the free ones    (integer)
+  bank[g]  money left after the GW-g transfers     (continuous, >= 0)
+  z[g]     1 if any transfer is made in GW g       (binary; created only when a club has more
+           than 3 squad players after a real-life transfer, see constraint 12)
 
 Objective
-  max  sum_g  d^(g-t) * [ sum_p xp[p,g]*(y[p,g] + c[p,g])            starters + captain bonus
-                          + BENCH_W * sum_p xp[p,g]*(x[p,g]-y[p,g])     small value for bench cover
-                          - 4*h[g] ]                                    transfer penalty
+  max  sum_g  delta^(g-t) * [ sum_p xp[p,g] * (y[p,g] + c[p,g])            starting XI, captain twice
+                              + beta * sum_p xp[p,g] * (x[p,g] - y[p,g])   bench, small weight
+                              - kappa * h[g] ]                             hit penalty
+  with delta = 0.9, beta = 0.1 and kappa = 4.
 """
 import gurobipy as gp
 from gurobipy import GRB
 
-QUOTA = {"GK": 2, "DEF": 5, "MID": 5, "FWD": 3}       # squad composition
-MIN_START = {"GK": 1, "DEF": 3, "MID": 2, "FWD": 1}   # valid formation (GK exactly 1)
-MAX_START = {"GK": 1, "DEF": 5, "MID": 5, "FWD": 3}
-CLUB_LIMIT = 3
-HIT_COST = 4
-MAX_FT = 5
-AFCON_GW = 16          # free transfers topped up to 5 in GW16 (2025/26 rule)
+QUOTA = {"GK": 2, "DEF": 5, "MID": 5, "FWD": 3}       # players per position in the squad
+MIN_START = {"GK": 1, "DEF": 3, "MID": 2, "FWD": 1}   # fewest starters per position
+MAX_START = {"GK": 1, "DEF": 5, "MID": 5, "FWD": 3}   # most starters per position
+CLUB_LIMIT = 3         # most squad players from one club
+HIT_COST = 4           # points lost per hit (kappa)
+MAX_FT = 5             # most free transfers that can be saved
+AFCON_GW = 16          # in 2025-26 every manager got 5 free transfers in GW16
 
 
 def solve(t, P, G, xp, cost, sell, pos, club, squad0, bank0, ft0,
           hit_cost=HIT_COST, bench_w=0.1, discount=0.9, max_transfers=None,
           time_limit=60, verbose=False):
-    """Build and solve the MILP for the deadline of GW t. Returns the GW-t decisions."""
-    first_gw = len(squad0) == 0          # GW1: squad picked from scratch, no transfer rules
+    """Build and solve the MILP at the deadline of GW t. Returns the decisions for GW t."""
+    first_gw = len(squad0) == 0          # GW1: the first squad is picked from scratch
     m = gp.Model(f"fpl_gw{t}")
     m.Params.OutputFlag = int(verbose)
     m.Params.TimeLimit = time_limit
     m.Params.MIPGap = 1e-4
 
-    # ---------- variables ----------
+    # ---------- decision variables ----------
     x = m.addVars(P, G, vtype=GRB.BINARY, name="x")
     y = m.addVars(P, G, vtype=GRB.BINARY, name="y")
     c = m.addVars(P, G, vtype=GRB.BINARY, name="c")
@@ -67,31 +72,34 @@ def solve(t, P, G, xp, cost, sell, pos, club, squad0, bank0, ft0,
     bank = m.addVars(G, lb=0.0, name="bank")
 
     owned = set(squad0)
-    z = {}                              # only created when a club is over the limit (rare)
+    z = {}                              # z[g], created only when constraint (12) needs it
+    # money received for a sale: the FPL selling price for a player already owned,
+    # the current price for a player bought within the plan
     sell_value = {p: sell[p] if p in owned else cost[p] for p in P}
 
     # ---------- constraints ----------
     for i, g in enumerate(G):
+        # squad and bank of the previous GW (for the first planned GW: the current ones)
         prev = (lambda p: 1 if p in owned else 0) if i == 0 else (lambda p, gp_=G[i - 1]: x[p, gp_])
         bank_prev = bank0 if i == 0 else bank[G[i - 1]]
 
-        # squad flow: this week's squad = last week's + bought - sold
+        # (1) squad = previous squad + players bought - players sold
         m.addConstrs((x[p, g] == prev(p) + b[p, g] - s[p, g] for p in P), name=f"flow_{g}")
-        # can only sell a player you own, can only buy a player you don't own
+        # (2) only a squad player can be sold, only a player not in the squad can be bought
         m.addConstrs((s[p, g] <= prev(p) for p in P), name=f"sell_owned_{g}")
         m.addConstrs((b[p, g] <= 1 - prev(p) for p in P), name=f"buy_new_{g}")
-        # budget: money only moves through transfers, never negative
+        # (3) the bank changes only through sales and purchases (bank >= 0 is set on the variable)
         m.addConstr(bank[g] == bank_prev
                     + gp.quicksum(sell_value[p] * s[p, g] for p in P)
                     - gp.quicksum(cost[p] * b[p, g] for p in P), name=f"budget_{g}")
 
-        # squad composition and club limit
+        # (4) 15 players: 2 GK, 5 DEF, 5 MID, 3 FWD
         m.addConstr(x.sum("*", g) == 15, name=f"squad15_{g}")
         for k, q in QUOTA.items():
             m.addConstr(gp.quicksum(x[p, g] for p in P if pos[p] == k) == q, name=f"quota_{k}_{g}")
-        # FPL rule: if a real-life transfer leaves us with more than 3 players from a club, we may
-        # keep them, but any transfer we make must bring that club back to 3.
-        #   z[g] = 1 if any transfer is made in GW g;  limit = 3 + excess * (1 - z[g])
+        # (5) at most 3 players from one club
+        # (12) excess[cl] > 0 when a real-life transfer left more than 3 squad players at a club.
+        #      They may be kept, but once any transfer is made (z[g] = 1) the club must go back to 3.
         excess = {cl: sum(1 for p in owned if club.get(p) == cl) - CLUB_LIMIT for cl in set(club.values())}
         for cl in excess:
             members = gp.quicksum(x[p, g] for p in P if club[p] == cl)
@@ -103,37 +111,39 @@ def solve(t, P, G, xp, cost, sell, pos, club, squad0, bank0, ft0,
             else:
                 m.addConstr(members <= CLUB_LIMIT, name=f"club_{cl}_{g}")
 
-        # starting XI with a valid formation, captain among starters
+        # (6) 11 starters, all from the squad
         m.addConstrs((y[p, g] <= x[p, g] for p in P), name=f"start_in_squad_{g}")
         m.addConstr(y.sum("*", g) == 11, name=f"xi_{g}")
+        # (7) valid formation: 1 GK and at least 3 DEF, 2 MID and 1 FWD
         for k in QUOTA:
             starters = gp.quicksum(y[p, g] for p in P if pos[p] == k)
             m.addConstr(starters >= MIN_START[k], name=f"minform_{k}_{g}")
             m.addConstr(starters <= MAX_START[k], name=f"maxform_{k}_{g}")
+        # (8) one captain, who must be a starter
         m.addConstrs((c[p, g] <= y[p, g] for p in P), name=f"capt_starter_{g}")
         m.addConstr(c.sum("*", g) == 1, name=f"one_captain_{g}")
 
-        # transfers: free ones first, the rest cost hit_cost points each
         if first_gw and i == 0:
+            # GW1: the first 15 players are not transfers, so (9)-(11) are not used
             m.addConstr(h[g] == 0)
             m.addConstr(u[g] == 0)
             m.addConstr(ft[g] == 0)
-            m.addConstr(s.sum("*", g) == 0)
         else:
+            # (9) every player bought is either a free transfer or a hit
             m.addConstr(b.sum("*", g) == u[g] + h[g], name=f"transfers_{g}")
-            if max_transfers is not None:      # used by the "no transfers" baseline
+            if max_transfers is not None:      # only for the "no transfers" strategy
                 m.addConstr(b.sum("*", g) <= max_transfers, name=f"max_transfers_{g}")
+            # (10) no more free transfers are used than are available
             m.addConstr(u[g] <= ft[g], name=f"use_free_{g}")
+            # (11) the plan starts with ft0; GW16 has 5; otherwise unused free transfers
+            #      carry over and one new one is added (at most 5, set on the variable)
             if i == 0:
                 m.addConstr(ft[g] == ft0, name="ft_start")
             elif g == AFCON_GW:
                 m.addConstr(ft[g] == MAX_FT, name="ft_afcon")
             else:
-                # unused free transfers roll over (+1 per week, at most 5)
                 g0 = G[i - 1]
                 m.addConstr(ft[g] <= ft[g0] - u[g0] + 1, name=f"ft_roll_{g}")
-                if first_gw and i == 1:
-                    m.addConstr(ft[g] <= 1)
 
     # ---------- objective ----------
     obj = gp.LinExpr()
@@ -148,6 +158,7 @@ def solve(t, P, G, xp, cost, sell, pos, club, squad0, bank0, ft0,
     if m.SolCount == 0:
         raise RuntimeError(f"GW{t}: no feasible solution (status {m.Status})")
 
+    # decisions for GW t, the first planned GW
     g = G[0]
     on = lambda var: [p for p in P if var[p, g].X > 0.5]
     bench = [p for p in on(x) if p not in on(y)]
@@ -156,41 +167,32 @@ def solve(t, P, G, xp, cost, sell, pos, club, squad0, bank0, ft0,
         "squad": on(x), "lineup": on(y), "captain": on(c)[0], "bench": bench_order,
         "buys": on(b), "sells": on(s),
         "hits": int(round(h[g].X)), "free_used": int(round(u[g].X)),
-        "bank": bank[g].X, "objective": m.ObjVal, "runtime": m.Runtime,
+        "bank": bank[g].X, "runtime": m.Runtime,
         "n_vars": m.NumVars, "n_constrs": m.NumConstrs, "optimal": m.Status == GRB.OPTIMAL,
-        "model": m,
     }
 
 
 # ---------------------------------------------------------------------------
-# helper: turn the CSV files into the inputs of solve()
+# inputs of solve() from the processed data files
 # ---------------------------------------------------------------------------
-def build_inputs(df, xp, t, horizon, owned=(), n_keep=None):
+def build_inputs(df, xp, t, horizon, owned=()):
     """
+    Inputs of solve() at the deadline of GW t.
     df = data/processed/player_gw.csv, xp = data/processed/xp.csv
-    n_keep = optional dict like {"GK": 10, "DEF": 30, ...} to keep only the best
-             candidates per position (faster); owned players are always kept.
     """
-    G = list(range(t, min(t + horizon, 39)))
+    G = list(range(t, min(t + horizon, 39)))       # the season ends at GW38
     X = xp[(xp.decision_gw == t) & xp.GW.isin(G)]
-    total = X.groupby("element").xp.sum()
     info = df[df.GW == t].set_index("element")
-    P = list(total.index)
-    if n_keep:
-        P = []
-        for k, n in n_keep.items():
-            ids = info[info.position == k].index.intersection(total.index)
-            P += list(total.loc[ids].sort_values(ascending=False).head(n).index)
-    P = sorted(set(P) | set(owned))
+    P = sorted(set(X.element) | set(owned))
     xpd = {(p, g): 0.0 for p in P for g in G}
-    for p, g, v in X[X.element.isin(P)][["element", "GW", "xp"]].itertuples(index=False):
+    for p, g, v in X[["element", "GW", "xp"]].itertuples(index=False):
         xpd[p, g] = v
     return (P, G, xpd, info.price.to_dict(), info.position.to_dict(),
             info.team.to_dict(), info.name.to_dict())
 
 
 if __name__ == "__main__":
-    # demo: pick the GW1 squad with a 3-week look-ahead, using ALL players
+    # demo: the optimal GW1 squad, planning 3 GWs ahead
     import pandas as pd
     df = pd.read_csv("data/processed/player_gw.csv")
     xp = pd.read_csv("data/processed/xp.csv")

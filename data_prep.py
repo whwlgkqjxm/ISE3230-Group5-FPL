@@ -1,7 +1,7 @@
 """
 data_prep.py
 ------------
-Step 1 of the project: download the 2025-26 FPL data and turn it into ONE clean
+Step 1 of 6: download the 2025-26 FPL data and turn it into ONE clean
 table with one row per (player, gameweek).
 
 Output: data/processed/player_gw.csv
@@ -37,7 +37,7 @@ N_GW = 38
 
 
 def download_raw():
-    """Download the raw files once and keep a copy in data/raw (needed for the GitHub repo)."""
+    """Download the raw files once and keep a copy in data/raw."""
     RAW_DIR.mkdir(parents=True, exist_ok=True)
     files = {"merged_gw.csv": "gws/merged_gw.csv",
              "fixtures.csv": "fixtures.csv",

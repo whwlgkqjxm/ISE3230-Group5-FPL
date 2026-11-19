@@ -1,10 +1,10 @@
 """
 analysis.py
 -----------
-Step 6 of the project: figures and the post-optimality analysis for the report.
+Step 6 of 6: figures and the post-optimality analysis for the report.
 
-  A. decisions of our model, strategy comparison         -> season_milp_H3.md, fig1_cumulative_points.png
-  B. post-optimality: H = 1..10 GWs planned ahead         -> sens_horizon.csv, fig2_optimal_horizon.png
+  A. week-by-week decisions of the main model, strategy comparison  -> season_milp_H3.md, fig1_cumulative_points.png
+  B. post-optimality analysis: H = 1..10 GWs planned ahead            -> sens_horizon.csv, fig2_optimal_horizon.png
 
 Run:  python analysis.py          (both parts, ~20 min)
       python analysis.py A        (only one part)
@@ -21,9 +21,9 @@ import simulate as S
 RES = Path("results")
 FIG = RES / "figures"
 
-# ---- chart style (validated categorical palette, fixed order; recessive grid) ----
+# ---- chart style ----
 SURFACE, INK, MUTED, GRID = "#fcfcfb", "#1f1f1e", "#6b6a63", "#e4e3de"
-SERIES = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100"]   # slot 1..4, never cycled
+SERIES = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100"]   # line colors, in this order
 plt.rcParams.update({
     "figure.facecolor": SURFACE, "axes.facecolor": SURFACE, "savefig.facecolor": SURFACE,
     "axes.edgecolor": GRID, "axes.labelcolor": MUTED, "xtick.color": MUTED, "ytick.color": MUTED,
@@ -48,7 +48,7 @@ def save(fig, name):
 
 # --------------------------------------------------------------------------- A
 def season_table(name="milp_H3"):
-    """Week-by-week decisions of one run as a readable Markdown table."""
+    """Week-by-week decisions of one season run as a Markdown table."""
     log = pd.read_csv(RES / f"season_{name}.csv").fillna("")
     pos = pd.read_csv("data/processed/player_gw.csv").set_index(["GW", "name"])["position"]
     order = {"GK": 0, "DEF": 1, "MID": 2, "FWD": 3}
@@ -68,7 +68,8 @@ def season_table(name="milp_H3"):
 
 
 def part_a():
-    """Cumulative points of the realistic strategies (perfect information is reported in the table only)."""
+    """Figure 1: cumulative points of the three strategies that can be used in reality.
+    Perfect information is only noted on the chart, because its line would be far above the others."""
     labels = {"milp_H3": "Our model (plans 3 GWs ahead)", "crowd": "Follow the crowd",
               "no_transfers": "No transfers"}
     fig, ax = plt.subplots(figsize=(8, 4.5))
@@ -77,7 +78,7 @@ def part_a():
         log = pd.read_csv(RES / f"season_{key}.csv")
         ax.plot(log.GW, log.total, color=SERIES[i], label=label)
         ends.append([log.total.iloc[-1], f"{label}  {log.total.iloc[-1]:,}"])
-    # end labels: push apart so they never overlap (min gap = 4.5% of the top value)
+    # labels at the line ends, moved apart so that they do not overlap (gap: 4.5% of the top value)
     ends.sort()
     gap = 0.045 * ends[-1][0]
     label_y = []
@@ -99,11 +100,11 @@ def part_a():
 
 
 # --------------------------------------------------------------------------- B
-def part_b(df, xp, horizons=range(1, 11), n_keep=None):
-    """Full-season total for each number of GWs planned ahead, H (hit cost -4)."""
+def part_b(df, xp, horizons=range(1, 11)):
+    """Post-optimality analysis: the whole season is played again for each H."""
     rows = []
     for H in horizons:
-        log = S.run_season(df, xp, f"sens_H{H}", horizon=H, n_keep=n_keep, verbose=False)
+        log = S.run_season(df, xp, f"sens_H{H}", horizon=H, verbose=False)
         rows.append({"horizon": H, "total_points": int(log.points.sum()),
                      "transfers": int(log.transfers.sum()), "hits": int(log.hits.sum()),
                      "solve_time_s": round(log.solve_time.sum(), 1)})
@@ -115,7 +116,7 @@ def part_b(df, xp, horizons=range(1, 11), n_keep=None):
 
 
 def plot_horizon(tab, main_h=3):
-    """Season points vs. H, with our model (H = 3) and the best tested H highlighted."""
+    """Figure 2: season points for each H, with the main model (H = 3) and the best H marked."""
     s = tab.sort_values("horizon")
     best = s.loc[s.total_points.idxmax()]
     main = s.loc[s.horizon == main_h].iloc[0]
@@ -124,17 +125,14 @@ def plot_horizon(tab, main_h=3):
     ax.plot(s.horizon, s.total_points, color=SERIES[0], marker="o", markersize=7)
     ax.scatter([best.horizon], [best.total_points], s=160, color=SERIES[0],
                edgecolor=SURFACE, linewidth=2, zorder=3)
-    at_edge = best.horizon == s.horizon.max()
-    label = "Best" + (" (largest H tested)" if at_edge else "")
-    ax.annotate(f"{label}\nH = {int(best.horizon)}  ({int(best.total_points):,} pts)",
-                (best.horizon, best.total_points), xytext=(6 if at_edge else 0, 14), textcoords="offset points",
-                fontsize=9.5, fontweight="bold", color=INK, va="bottom", ha="right" if at_edge else "center")
-    if main.horizon != best.horizon:
-        ax.scatter([main.horizon], [main.total_points], s=160, color=SERIES[1],
-                   edgecolor=SURFACE, linewidth=2, zorder=3)
-        ax.annotate(f"Our model\nH = {int(main.horizon)}  ({int(main.total_points):,} pts)",
-                    (main.horizon, main.total_points), xytext=(0, 14), textcoords="offset points",
-                    fontsize=9.5, fontweight="bold", color=SERIES[1], va="bottom", ha="center")
+    ax.annotate(f"Best\nH = {int(best.horizon)}  ({int(best.total_points):,} pts)",
+                (best.horizon, best.total_points), xytext=(0, 14), textcoords="offset points",
+                fontsize=9.5, fontweight="bold", color=INK, va="bottom", ha="center")
+    ax.scatter([main.horizon], [main.total_points], s=160, color=SERIES[1],
+               edgecolor=SURFACE, linewidth=2, zorder=3)
+    ax.annotate(f"Our model\nH = {int(main.horizon)}  ({int(main.total_points):,} pts)",
+                (main.horizon, main.total_points), xytext=(0, 14), textcoords="offset points",
+                fontsize=9.5, fontweight="bold", color=SERIES[1], va="bottom", ha="center")
     for row in s.itertuples():
         if row.horizon not in (best.horizon, main.horizon):
             ax.annotate(f"{int(row.total_points):,}", (row.horizon, row.total_points), xytext=(0, -16),

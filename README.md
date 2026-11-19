@@ -181,7 +181,7 @@ In GW1 constraints (9)–(11) do not apply; instead $`u = h = ft = 0`$ and nothi
 
 - In (11) the real rule is an equality. "≤" gives the same optimal value, because having more free
   transfers never lowers the objective.
-- **Model size:** for GW1 with H = 3 there are 690 candidates, **10,362 variables and 10,469
+- **Model size:** for GW1 with H = 3 there are 690 candidates, **10,362 variables and 10,467
   constraints**.
 
 ### 3.4 Where the expected points $`xP`$ come from
@@ -262,7 +262,8 @@ for g in range(t, min(t + horizon, N_GW + 1)):
 
 ### 4.2 Decision variables (`model.py`, Section 2)
 
-One Gurobi variable per player and planned week. $`z_g`$ is created only when needed (snippet 4.4).
+`x`, `y`, `c`, `b` and `s` have one Gurobi variable per player and planned GW; `ft`, `u`, `h` and `bank`
+have one per planned GW. $`z_g`$ is created only when needed (snippet 4.4).
 
 ```python
 x = m.addVars(P, G, vtype=GRB.BINARY, name="x")
@@ -283,15 +284,16 @@ variable of the week before.
 
 ```python
 for i, g in enumerate(G):
+    # squad and bank of the previous GW (for the first planned GW: the current ones)
     prev = (lambda p: 1 if p in owned else 0) if i == 0 else (lambda p, gp_=G[i - 1]: x[p, gp_])
     bank_prev = bank0 if i == 0 else bank[G[i - 1]]
 
-    # squad flow: this week's squad = last week's + bought - sold
+    # (1) squad = previous squad + players bought - players sold
     m.addConstrs((x[p, g] == prev(p) + b[p, g] - s[p, g] for p in P), name=f"flow_{g}")
-    # can only sell a player you own, can only buy a player you don't own
+    # (2) only a squad player can be sold, only a player not in the squad can be bought
     m.addConstrs((s[p, g] <= prev(p) for p in P), name=f"sell_owned_{g}")
     m.addConstrs((b[p, g] <= 1 - prev(p) for p in P), name=f"buy_new_{g}")
-    # budget: money only moves through transfers, never negative
+    # (3) the bank changes only through sales and purchases (bank >= 0 is set on the variable)
     m.addConstr(bank[g] == bank_prev
                 + gp.quicksum(sell_value[p] * s[p, g] for p in P)
                 - gp.quicksum(cost[p] * b[p, g] for p in P), name=f"budget_{g}")
@@ -303,9 +305,13 @@ for i, g in enumerate(G):
 and linked to the number of transfers.
 
 ```python
+# (4) 15 players: 2 GK, 5 DEF, 5 MID, 3 FWD
 m.addConstr(x.sum("*", g) == 15, name=f"squad15_{g}")
 for k, q in QUOTA.items():
     m.addConstr(gp.quicksum(x[p, g] for p in P if pos[p] == k) == q, name=f"quota_{k}_{g}")
+# (5) at most 3 players from one club
+# (12) excess[cl] > 0 when a real-life transfer left more than 3 squad players at a club.
+#      They may be kept, but once any transfer is made (z[g] = 1) the club must go back to 3.
 excess = {cl: sum(1 for p in owned if club.get(p) == cl) - CLUB_LIMIT for cl in set(club.values())}
 for cl in excess:
     members = gp.quicksum(x[p, g] for p in P if club[p] == cl)
@@ -321,32 +327,40 @@ for cl in excess:
 ### 4.5 Starting XI, formation and captain, constraints (6)–(8)
 
 ```python
+# (6) 11 starters, all from the squad
 m.addConstrs((y[p, g] <= x[p, g] for p in P), name=f"start_in_squad_{g}")
 m.addConstr(y.sum("*", g) == 11, name=f"xi_{g}")
+# (7) valid formation: 1 GK and at least 3 DEF, 2 MID and 1 FWD
 for k in QUOTA:
     starters = gp.quicksum(y[p, g] for p in P if pos[p] == k)
     m.addConstr(starters >= MIN_START[k], name=f"minform_{k}_{g}")
     m.addConstr(starters <= MAX_START[k], name=f"maxform_{k}_{g}")
+# (8) one captain, who must be a starter
 m.addConstrs((c[p, g] <= y[p, g] for p in P), name=f"capt_starter_{g}")
 m.addConstr(c.sum("*", g) == 1, name=f"one_captain_{g}")
 ```
 
 ### 4.6 Transfers and free transfers, constraints (9)–(11) and GW1
 
-In GW1 the squad is picked from scratch, so there are no hits, free transfers or sales.
-`max_transfers` is used only by the "no transfers" strategy.
+In GW1 the squad is picked from scratch, so (9)–(11) are not used and $`u = h = ft = 0`$. Nothing can
+be sold in GW1, because the squad is still empty (constraint 2). `max_transfers` is used only by the
+"no transfers" strategy.
 
 ```python
 if first_gw and i == 0:
+    # GW1: the first 15 players are not transfers, so (9)-(11) are not used
     m.addConstr(h[g] == 0)
     m.addConstr(u[g] == 0)
     m.addConstr(ft[g] == 0)
-    m.addConstr(s.sum("*", g) == 0)
 else:
+    # (9) every player bought is either a free transfer or a hit
     m.addConstr(b.sum("*", g) == u[g] + h[g], name=f"transfers_{g}")
-    if max_transfers is not None:      # used by the "no transfers" baseline
+    if max_transfers is not None:      # only for the "no transfers" strategy
         m.addConstr(b.sum("*", g) <= max_transfers, name=f"max_transfers_{g}")
+    # (10) no more free transfers are used than are available
     m.addConstr(u[g] <= ft[g], name=f"use_free_{g}")
+    # (11) the plan starts with ft0; GW16 has 5; otherwise unused free transfers
+    #      carry over and one new one is added (at most 5, set on the variable)
     if i == 0:
         m.addConstr(ft[g] == ft0, name="ft_start")
     elif g == AFCON_GW:
@@ -354,8 +368,6 @@ else:
     else:
         g0 = G[i - 1]
         m.addConstr(ft[g] <= ft[g0] - u[g0] + 1, name=f"ft_roll_{g}")
-        if first_gw and i == 1:
-            m.addConstr(ft[g] <= 1)
 ```
 
 ### 4.7 Objective and solve (Section 3.2)
@@ -396,17 +408,16 @@ the captain doesn't play) and automatic substitutions from the bench. `plan_hit_
 ```python
 for t in range(1, N_GW + 1):
     info = by_gw[t]
-    P, G, xpd, price, pos, club, pname = M.build_inputs(df, xp, t, horizon, owned=squad, n_keep=n_keep)
+    P, G, xpd, price, pos, club, pname = M.build_inputs(df, xp, t, horizon, owned=squad)
     sell = {p: selling_price(bought_at[p], price[p]) if p in bought_at else price[p] for p in P}
 
     tic = time.time()
     r = M.solve(t, P, G, xpd, price, sell, pos, club, squad0=squad, bank0=bank, ft0=ft,
-                hit_cost=hit_cost if plan_hit_cost is None else plan_hit_cost,
-                bench_w=bench_w, discount=discount,
+                hit_cost=M.HIT_COST if plan_hit_cost is None else plan_hit_cost,
                 max_transfers=max_transfers)
     solve_time = time.time() - tic
 
-    # carry out the GW-t transfers (bank recomputed exactly with FPL prices)
+    # carry out the GW-t transfers (the bank is recomputed with the FPL prices)
     for p in r["sells"]:
         bank += sell[p]
         bought_at.pop(p)
@@ -416,11 +427,11 @@ for t in range(1, N_GW + 1):
     bank = round(bank, 1)
     squad = r["squad"]
 
-    # vice-captain = starter with the 2nd highest expected points this GW
+    # vice-captain: the starter with the highest expected points in GW t after the captain
     vice = sorted([p for p in r["lineup"] if p != r["captain"]], key=lambda p: -xpd[p, t])[0]
-    pts, xi = score_gw(r["lineup"], r["bench"], r["captain"], vice, info["position"],
-                       info["minutes"], info["points"])
-    pts -= hit_cost * r["hits"]
+    pts = score_gw(r["lineup"], r["bench"], r["captain"], vice, info["position"],
+                   info["minutes"], info["points"])
+    pts -= M.HIT_COST * r["hits"]
 ```
 
 ### 4.9 Comparison strategies (`baselines.py`)
@@ -433,13 +444,13 @@ the player in their team) and allows free transfers only (a hit cost of 1,000 in
 
 ```python
 logs["no_transfers"] = S.run_season(df, xp, "no_transfers", horizon=hold_horizon, max_transfers=0,
-                                    n_keep=n_keep, verbose=False)
+                                    verbose=False)
 crowd_df = ownership(df)
 logs["crowd"] = S.run_season(df, xp_from_values(crowd_df, "selected", 1), "crowd", horizon=1,
-                             plan_hit_cost=1000, n_keep=n_keep, verbose=False)  # free transfers only
-logs["milp_H3"] = S.run_season(df, xp, "milp_H3", horizon=3, n_keep=n_keep, verbose=False)
+                             plan_hit_cost=1000, verbose=False)  # a hit cost of 1000: free transfers only
+logs["milp_H3"] = S.run_season(df, xp, "milp_H3", horizon=3, verbose=False)
 logs["perfect_H3"] = S.run_season(df, xp_from_values(df, "points", 3), "perfect_H3", horizon=3,
-                                  n_keep=n_keep, verbose=False)
+                                  verbose=False)
 ```
 
 ### 4.10 Post-optimality: number of GWs planned ahead (`analysis.py`)
@@ -449,7 +460,7 @@ planned GWs changes.
 
 ```python
 for H in horizons:
-    log = S.run_season(df, xp, f"sens_H{H}", horizon=H, n_keep=n_keep, verbose=False)
+    log = S.run_season(df, xp, f"sens_H{H}", horizon=H, verbose=False)
     rows.append({"horizon": H, "total_points": int(log.points.sum()),
                  "transfers": int(log.transfers.sum()), "hits": int(log.hits.sum()),
                  "solve_time_s": round(log.solve_time.sum(), 1)})

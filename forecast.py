@@ -1,25 +1,26 @@
 """
 forecast.py
 -----------
-Step 2 of the project: expected points (xP) for every player.
+Step 2 of 6: expected points (xP) of every player.
 
-At the deadline of gameweek t we may ONLY use information from GW 1..t-1.
-For each future GW g = t, t+1, ..., t+H-1:
+At the deadline of GW t, only data from GW 1..t-1 is used.
+For each planned GW g = t, t+1, ..., t+H-1:
 
-    xP[p, g] = P(play)[p, t]  *  pts_per_app[p, t]  *  n_fixtures[club of p, g]
+    xP[p, g] = P(play)[p, t]  *  PPA[p, t]  *  n_fixtures[club of p, g]
 
-  P(play)      chance the player plays a match. Weighted share of his club's recent
-               matches in which he played (last match counts most), shrunk toward a prior.
-               (In the data, a player who missed the last 2 matches plays the next one
-               only ~5% of the time, so recency matters a lot.)
-  pts_per_app  points per match when he plays, over the last W gameweeks, shrunk toward
-               a prior with weight K ("K pseudo-matches").
-  n_fixtures   0 in a blank GW, 2 in a double GW, as KNOWN at the deadline of GW t
-               (data/processed/fixtures_known.csv; later rescheduling is not used).
+  P(play)      chance that the player plays a match: the share of his club's matches in the
+               last 4 GWs that he played in, with recent GWs counting more, mixed with a prior.
+               (In the data, a player who missed his club's last 2 matches plays the next one
+               only about 6% of the time, so recent GWs count more.)
+  PPA          points per match played over the last 6 GWs, mixed with a prior that counts as
+               4 extra matches (K_PRIOR)
+  n_fixtures   matches of his club in GW g as scheduled at the deadline of GW t
+               (0 in a blank GW, 2 in a double GW; data/processed/fixtures_known.csv)
 
-  Priors come from LAST season (2024-25, same GitHub repo): minutes share and points per
-  appearance. Players with no PL history last season get values predicted from their price
-  (linear fit per position, using only players in the game at GW1 who have last-season data).
+  The priors come from last season (2024-25, same data source): share of minutes played and
+  points per match played. Players who were not in the Premier League last season get values
+  estimated from their price (a straight-line fit per position, using only players in the game
+  at GW1 who have last-season data).
 
 Output: data/processed/xp.csv  with columns  decision_gw, element, GW, xp
 """
@@ -32,12 +33,12 @@ RAW_DIR = Path("data/raw")
 OUT_DIR = Path("data/processed")
 N_GW = 38
 
-WINDOW = 6     # W: past GWs used for points per appearance
-K_PRIOR = 4    # K: weight of the prior, in "matches"
-PLAY_DECAY = 0.5   # weight of a match 1 week older (for P(play))
+WINDOW = 6         # past GWs used for PPA
+K_PRIOR = 4        # weight of the PPA prior, in matches
+PLAY_DECAY = 0.5   # for P(play), each GW counts half as much as the GW after it
 PLAY_WINDOW = 4    # past GWs used for P(play)
-K_PLAY = 0.5       # weight of the prior for P(play)
-HORIZON = 10   # longest look-ahead we will ever need
+K_PLAY = 0.5       # weight of the P(play) prior, in matches
+HORIZON = 10       # longest planning horizon used (H = 10)
 
 
 def load():
@@ -49,14 +50,14 @@ def load():
         if not path.exists():
             print(f"downloading {remote} ...")
             pd.read_csv(f"{BASE_URL}/{remote}").to_csv(path, index=False)
-    # only static ids (id <-> code) are taken from the 2025-26 file -> no look-ahead
+    # from the 2025-26 file only the player ids are used, so no future data enters the forecast
     ids_now = pd.read_csv(RAW_DIR / "players_raw_2526.csv")[["id", "code"]]
     last = pd.read_csv(RAW_DIR / "players_raw_2425.csv")[["code", "total_points", "minutes", "starts"]]
     return df, ids_now, last
 
 
 def build_prior(df, ids_now, last):
-    """Priors (P(play), points per appearance) using only last season + GW-entry price."""
+    """Priors of P(play) and PPA: last season's numbers, or an estimate from the price for new players."""
     gw1_ids = set(df[(df.GW == 1) & (df.available == 1)].element)
     first = (df[df.available == 1].sort_values("GW")
              .groupby("element").first()[["position", "price"]])
@@ -64,11 +65,11 @@ def build_prior(df, ids_now, last):
     first = first.merge(last, on="code", how="left").set_index(first.index)
     apps = np.maximum(first["starts"], first["minutes"] / 90)
     first["play"] = (first["minutes"] / (N_GW * 90)).clip(0, 1)
-    first["ppa"] = first["total_points"] / (apps + 2)            # +2: shrink small samples
+    first["ppa"] = first["total_points"] / (apps + 2)            # +2: a player with few matches does not look too good
 
     for col in ["play", "ppa"]:
         for pos, grp in first.groupby("position"):
-            # fit only on players in the game at GW1 -> uses no information from later GWs
+            # fit only on players in the game at GW1, so no later data is used
             known = grp[grp.index.isin(gw1_ids)].dropna(subset=[col])
             slope, intercept = np.polyfit(known["price"], known[col], 1)
             missing = grp[col].isna()
@@ -85,19 +86,19 @@ def forecast_all(df, prior, window=WINDOW, k=K_PRIOR, horizon=HORIZON,
     piv = lambda col: df.pivot(index="element", columns="GW", values=col)
     pts, nfix, team, avail = piv("points"), piv("n_fixtures"), piv("team"), piv("available")
     fix = nfix * avail                                   # matches the player could have played
-    apps = piv("apps") * avail                           # matches he actually played (per match)
+    apps = piv("apps") * avail                           # matches he actually played
     known = pd.read_csv(OUT_DIR / "fixtures_known.csv").set_index(["decision_gw", "team", "GW"])["n_fixtures"]
     prior = prior.reindex(pts.index)
 
     out = []
     for t in range(1, N_GW + 1):
-        # points per appearance over the last `window` GWs
+        # PPA: points per match played over the last `window` GWs
         past = list(range(max(1, t - window), t))
         p_sum = pts[past].sum(axis=1) if past else 0
         a_sum = apps[past].sum(axis=1) if past else 0
         ppa = (p_sum + k * prior["ppa"]) / (a_sum + k)
 
-        # P(play): recency-weighted share of matches played
+        # P(play): share of matches played, recent GWs counting more
         recent = list(range(max(1, t - play_window), t))
         w = pd.Series({g: decay ** (t - 1 - g) for g in recent}, dtype=float)
         num = (apps[recent] * w).sum(axis=1) if recent else 0
@@ -105,8 +106,8 @@ def forecast_all(df, prior, window=WINDOW, k=K_PRIOR, horizon=HORIZON,
         play = (num + k_play * prior["play"]) / (den + k_play)
 
         rate = (play * ppa).fillna(0)
-        players = avail.index[avail[t] == 1]          # must exist in the game at t
-        club_now = team.loc[players, t]               # club known at the deadline
+        players = avail.index[avail[t] == 1]          # players in the game at GW t
+        club_now = team.loc[players, t]               # club at the deadline of GW t
         for g in range(t, min(t + horizon, N_GW + 1)):
             nf = known.reindex(pd.MultiIndex.from_arrays([[t] * len(players), club_now.values,
                                                           [g] * len(players)])).values
@@ -116,12 +117,11 @@ def forecast_all(df, prior, window=WINDOW, k=K_PRIOR, horizon=HORIZON,
 
 
 def evaluate(xp, df):
-    """How good is the 1-week-ahead forecast? (only for reporting)"""
+    """Correlation between the expected points for the current GW and the real points."""
     one = xp[xp.decision_gw == xp.GW].merge(df[["element", "GW", "points"]], on=["element", "GW"])
     corr = one[["xp", "points"]].corr().iloc[0, 1]
-    mae = (one.xp - one.points).abs().mean()
-    print(f"1-week-ahead forecast: correlation = {corr:.3f}, MAE = {mae:.2f} points")
-    return corr, mae
+    print(f"1-week-ahead forecast: correlation with the real points = {corr:.3f}")
+    return corr
 
 
 if __name__ == "__main__":
