@@ -387,7 +387,7 @@ m.optimize()
 ```
 
 Gurobi stops when the solution is proven to be within 0.01 % of the optimum, or after `time_limit`
-(60 s by default).
+(120 s by default).
 
 ```python
 m.Params.TimeLimit = time_limit

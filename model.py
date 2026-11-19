@@ -52,7 +52,7 @@ AFCON_GW = 16          # in 2025-26 every manager got 5 free transfers in GW16
 
 def solve(t, P, G, xp, cost, sell, pos, club, squad0, bank0, ft0,
           hit_cost=HIT_COST, bench_w=0.1, discount=0.9, max_transfers=None,
-          time_limit=60, verbose=False):
+          time_limit=120, verbose=False):
     """Build and solve the MILP at the deadline of GW t. Returns the decisions for GW t."""
     first_gw = len(squad0) == 0          # GW1: the first squad is picked from scratch
     m = gp.Model(f"fpl_gw{t}")
