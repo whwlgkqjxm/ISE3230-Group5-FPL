@@ -88,7 +88,8 @@ def solve(t, P, G, xp, cost, sell, pos, club, squad0, bank0, ft0,
         # (2) only a squad player can be sold, only a player not in the squad can be bought
         m.addConstrs((s[p, g] <= prev(p) for p in P), name=f"sell_owned_{g}")
         m.addConstrs((b[p, g] <= 1 - prev(p) for p in P), name=f"buy_new_{g}")
-        # (3) the bank changes only through sales and purchases (bank >= 0 is set on the variable)
+        # (3) the bank changes only through sales and purchases; it cannot go below 0
+        #     (the lower bound 0 is given when bank is created above)
         m.addConstr(bank[g] == bank_prev
                     + gp.quicksum(sell_value[p] * s[p, g] for p in P)
                     - gp.quicksum(cost[p] * b[p, g] for p in P), name=f"budget_{g}")
@@ -136,7 +137,7 @@ def solve(t, P, G, xp, cost, sell, pos, club, squad0, bank0, ft0,
             # (10) no more free transfers are used than are available
             m.addConstr(u[g] <= ft[g], name=f"use_free_{g}")
             # (11) the plan starts with ft0; GW16 has 5; otherwise unused free transfers
-            #      carry over and one new one is added (at most 5, set on the variable)
+            #      carry over and one new one is added (the limit of 5 is given when ft is created above)
             if i == 0:
                 m.addConstr(ft[g] == ft0, name="ft_start")
             elif g == AFCON_GW:

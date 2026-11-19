@@ -8,7 +8,7 @@ FPL rules). Only what the MILP maximizes, or which transfers are allowed, is dif
   1. no_transfers   picks the GW1 squad by planning 10 GWs ahead and never transfers;
                     only the starting XI and the captain change each GW
   2. crowd          "follow the crowd": ownership (how many FPL managers own a player at the
-                    deadline) replaces the expected points; free transfers only
+                    deadline) replaces the expected points; plans 1 GW ahead, free transfers only
   3. milp_H3        the main model: expected points, planning 3 GWs ahead
   4. perfect_H3     the same MILP with the real points of the next 3 GWs instead of the expected
                     points (not possible in reality; an upper reference point)
@@ -45,6 +45,7 @@ def ownership(df):
 
 
 def run_all(hold_horizon=10):
+    """Play the season with the four strategies and save results/summary.csv."""
     df = pd.read_csv("data/processed/player_gw.csv")
     xp = pd.read_csv("data/processed/xp.csv")
     logs = {}

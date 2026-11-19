@@ -1,11 +1,11 @@
 """
 data_prep.py
 ------------
-Step 1 of 6: download the 2025-26 FPL data and turn it into ONE clean
-table with one row per (player, gameweek).
+Step 1 of 6: download the 2025-26 FPL data and turn it into one clean table
+with one row per player and gameweek (GW).
 
-Output: data/processed/player_gw.csv
-        data/processed/fixtures_known.csv  (matches per club and GW as known at each GW deadline)
+Output: data/processed/player_gw.csv       the clean table (columns below)
+        data/processed/fixtures_known.csv  matches per club and GW, as scheduled at each GW deadline
 
 Columns
   element      player id
@@ -24,7 +24,7 @@ Data problems handled
   1. duplicate rows (same player, same fixture)       -> dropped
   2. double gameweeks (2 rows per player in one GW)    -> summed
   3. blank gameweeks (no row at all)                   -> filled with 0 points
-  4. players joining mid-season                        -> available = 0 before first appearance
+  4. players joining mid-season                        -> available = 0 before their first GW in the data
   5. club changes                                      -> team taken per GW
 """
 from pathlib import Path
@@ -53,7 +53,7 @@ def download_raw():
 
 
 def team_fixture_counts(fixtures, teams):
-    """Number of matches each club plays in each GW (from the fixture list, known in advance)."""
+    """Number of matches each club played in each GW, from the final fixture list of the season."""
     id2name = teams.set_index("id")["name"]
     home = fixtures[["event", "team_h"]].rename(columns={"team_h": "team_id"})
     away = fixtures[["event", "team_a"]].rename(columns={"team_a": "team_id"})
@@ -68,18 +68,21 @@ def team_fixture_counts(fixtures, teams):
 
 def known_fixture_counts(fixtures, teams):
     """
-    Matches per club in each future GW, as they were KNOWN at the deadline of each decision GW.
-    fixtures.csv holds the final schedule; 5 matches were moved after the season started
-    (data/raw/fixture_changes.csv, with the official announcement dates). Before a match was
-    postponed it counts in its original GW; once postponed without a new date it counts in no GW
-    (as in FPL); once the new date was announced it counts in its final GW.
-    A change is known at decision GW t if it was announced before the day of t's first kick-off.
+    Matches per club in each GW, as scheduled at the deadline of each GW t (the GW when the
+    decisions are made). The forecast at GW t may only use this schedule, not the final one.
+
+    fixtures.csv holds the final schedule, but 5 matches were moved during the season
+    (data/raw/fixture_changes.csv, with the dates the changes were announced). At GW t:
+      - if the postponement was not announced yet, the match counts in its original GW
+      - if it was postponed but the new date was not announced yet, it counts in no GW (as in FPL)
+      - once the new date was announced, it counts in its new GW
+    A change counts as announced at GW t if it was announced before the day of GW t's first match.
     """
     changes = pd.read_csv(RAW_DIR / "fixture_changes.csv").set_index("fixture_id")
     id2name = teams.set_index("id")["name"]
     fx = fixtures.copy()
     fx["ko"] = pd.to_datetime(fx["kickoff_time"]).dt.tz_localize(None)
-    deadline_day = fx.groupby("event")["ko"].min().dt.normalize()     # first kick-off day of each GW
+    deadline_day = fx.groupby("event")["ko"].min().dt.normalize()     # day of the first match of each GW
     rows = []
     for t in range(1, N_GW + 1):
         day = deadline_day[t]
@@ -88,9 +91,9 @@ def known_fixture_counts(fixtures, teams):
             if f.id in changes.index:
                 c = changes.loc[f.id]
                 if not pd.Timestamp(c.postponed_known) < day:
-                    gw = c.original_gw                     # change not yet known
+                    gw = c.original_gw                     # postponement not announced yet: original GW
                 elif not pd.Timestamp(c.new_date_known) < day:
-                    gw = None                              # postponed, new date not yet known
+                    gw = None                              # postponed, new date not announced yet: no GW
             if gw is not None and gw >= t:
                 rows += [(t, id2name[f.team_h], gw), (t, id2name[f.team_a], gw)]
     known = pd.DataFrame(rows, columns=["decision_gw", "team", "GW"])
@@ -101,40 +104,42 @@ def known_fixture_counts(fixtures, teams):
 
 
 def build_player_gw(merged, fixtures, teams):
+    """The clean table: one row per player and GW (see the column list at the top)."""
     # 1. drop duplicate rows
     before = len(merged)
     merged = merged.drop_duplicates(subset=["element", "fixture"])
     print(f"duplicate rows removed: {before - len(merged)}")
 
-    # 2. one row per (player, GW) — sum points/minutes over a double GW
+    # 2. one row per player and GW: in a double GW, points and minutes of the two matches are added
     gw = (merged.groupby(["element", "GW"])
           .agg(name=("name", "first"),
                position=("position", "first"),
                team=("team", "first"),
                price=("value", "first"),
                minutes=("minutes", "sum"),
-               apps=("minutes", lambda s: int((s > 0).sum())),   # per match, not per GW
+               apps=("minutes", lambda s: int((s > 0).sum())),   # matches with minutes > 0 (up to 2)
                points=("total_points", "sum"))
           .reset_index())
-    gw["price"] = gw["price"] / 10  # 55 -> 5.5 (£m)
+    gw["price"] = gw["price"] / 10  # the raw data stores prices in £0.1m: 55 -> £5.5m
 
-    # 3. full grid: every player x every GW
+    # 3. one row for every player in every GW, also in GWs without a match
     players = gw.groupby("element").agg(name=("name", "first"), position=("position", "first"),
                                         first_gw=("GW", "min"))
     grid = pd.MultiIndex.from_product([players.index, range(1, N_GW + 1)], names=["element", "GW"])
     df = gw.set_index(["element", "GW"]).drop(columns=["name", "position"]).reindex(grid).reset_index()
     df = df.merge(players, left_on="element", right_index=True)
 
-    # 4. available only from the first GW the player shows up
+    # 4. a player is available from his first GW in the data (new signings appear later)
     df["available"] = (df["GW"] >= df["first_gw"]).astype(int)
 
-    # 5. team/price in a blank GW = last known value (or next known, for the very first GWs)
+    # 5. in a GW without a match, club and price are taken from the GW before
+    #    (or from the GW after, if the player has no earlier GW)
     df = df.sort_values(["element", "GW"])
     for col in ["team", "price"]:
         df[col] = df.groupby("element")[col].transform(lambda s: s.ffill().bfill())
     df[["minutes", "points", "apps"]] = df[["minutes", "points", "apps"]].fillna(0).astype(int)
 
-    # number of matches that GW for the player's club
+    # number of matches of the player's club in that GW
     df = df.merge(team_fixture_counts(fixtures, teams), on=["team", "GW"], how="left")
 
     cols = ["element", "name", "position", "GW", "team", "n_fixtures",
@@ -143,6 +148,7 @@ def build_player_gw(merged, fixtures, teams):
 
 
 def sanity_checks(df):
+    """Quick checks of the clean table: no duplicates, valid positions, top scorers, blank and double GWs."""
     assert not df.duplicated(["element", "GW"]).any(), "duplicate (player, GW)"
     assert df["position"].isin(["GK", "DEF", "MID", "FWD"]).all()
     assert df["n_fixtures"].notna().all()

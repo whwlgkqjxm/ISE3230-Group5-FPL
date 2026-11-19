@@ -9,18 +9,19 @@ For each planned GW g = t, t+1, ..., t+H-1:
     xP[p, g] = P(play)[p, t]  *  PPA[p, t]  *  n_fixtures[club of p, g]
 
   P(play)      chance that the player plays a match: the share of his club's matches in the
-               last 4 GWs that he played in, with recent GWs counting more, mixed with a prior.
+               last 4 GWs that he played in, with recent GWs counting more.
                (In the data, a player who missed his club's last 2 matches plays the next one
                only about 6% of the time, so recent GWs count more.)
-  PPA          points per match played over the last 6 GWs, mixed with a prior that counts as
-               4 extra matches (K_PRIOR)
+  PPA          points per match played over the last 6 GWs
   n_fixtures   matches of his club in GW g as scheduled at the deadline of GW t
                (0 in a blank GW, 2 in a double GW; data/processed/fixtures_known.csv)
 
-  The priors come from last season (2024-25, same data source): share of minutes played and
-  points per match played. Players who were not in the Premier League last season get values
-  estimated from their price (a straight-line fit per position, using only players in the game
-  at GW1 who have last-season data).
+  Both values are mixed with the player's value from last season (2024-25, same data source),
+  called the "prior" in the code. Last season's value counts like 4 extra matches for PPA
+  (K_PRIOR) and half a match for P(play) (K_PLAY), so it matters most early in the season.
+  Players who were not in the Premier League last season get values estimated from their price
+  (a straight-line fit per position, using only players in the game at GW1 who have
+  last-season data).
 
 Output: data/processed/xp.csv  with columns  decision_gw, element, GW, xp
 """
@@ -34,10 +35,10 @@ OUT_DIR = Path("data/processed")
 N_GW = 38
 
 WINDOW = 6         # past GWs used for PPA
-K_PRIOR = 4        # weight of the PPA prior, in matches
+K_PRIOR = 4        # last season's PPA counts like this many extra matches
 PLAY_DECAY = 0.5   # for P(play), each GW counts half as much as the GW after it
 PLAY_WINDOW = 4    # past GWs used for P(play)
-K_PLAY = 0.5       # weight of the P(play) prior, in matches
+K_PLAY = 0.5       # last season's P(play) counts like this many extra matches
 HORIZON = 10       # longest planning horizon used (H = 10)
 
 
@@ -57,7 +58,8 @@ def load():
 
 
 def build_prior(df, ids_now, last):
-    """Priors of P(play) and PPA: last season's numbers, or an estimate from the price for new players."""
+    """Last season's P(play) and PPA of every player (the "prior"), or an estimate from the price
+    for players who were not in the Premier League last season."""
     gw1_ids = set(df[(df.GW == 1) & (df.available == 1)].element)
     first = (df[df.available == 1].sort_values("GW")
              .groupby("element").first()[["position", "price"]])
@@ -92,13 +94,13 @@ def forecast_all(df, prior, window=WINDOW, k=K_PRIOR, horizon=HORIZON,
 
     out = []
     for t in range(1, N_GW + 1):
-        # PPA: points per match played over the last `window` GWs
+        # PPA: points per match played over the last `window` GWs, mixed with last season's PPA
         past = list(range(max(1, t - window), t))
         p_sum = pts[past].sum(axis=1) if past else 0
         a_sum = apps[past].sum(axis=1) if past else 0
         ppa = (p_sum + k * prior["ppa"]) / (a_sum + k)
 
-        # P(play): share of matches played, recent GWs counting more
+        # P(play): share of matches played, recent GWs counting more, mixed with last season's value
         recent = list(range(max(1, t - play_window), t))
         w = pd.Series({g: decay ** (t - 1 - g) for g in recent}, dtype=float)
         num = (apps[recent] * w).sum(axis=1) if recent else 0
