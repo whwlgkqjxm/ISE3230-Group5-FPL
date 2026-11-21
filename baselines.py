@@ -64,7 +64,6 @@ def run_all(hold_horizon=10):
         "total_points": int(v.points.sum()),
         "transfers": int(v.transfers.sum()),
         "hits": int(v.hits.sum()),
-        "captain_pts": int(v.captain_pts.sum()),
     } for k, v in logs.items()])
     summary.to_csv("results/summary.csv", index=False)
     print("\n" + summary.to_string(index=False))

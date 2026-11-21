@@ -72,6 +72,8 @@ def solve(t, P, G, xp, cost, sell, pos, club, squad0, bank0, ft0,
     bank = m.addVars(G, lb=0.0, name="bank")
 
     owned = set(squad0)
+    # squad players above the club limit, per club (> 0 only after a real-life transfer, see (12))
+    excess = {cl: sum(1 for p in owned if club.get(p) == cl) - CLUB_LIMIT for cl in set(club.values())}
     z = {}                              # z[g], created only when constraint (12) needs it
     # money received for a sale: the FPL selling price for a player already owned,
     # the current price for a player bought within the plan
@@ -101,7 +103,6 @@ def solve(t, P, G, xp, cost, sell, pos, club, squad0, bank0, ft0,
         # (5) at most 3 players from one club
         # (12) excess[cl] > 0 when a real-life transfer left more than 3 squad players at a club.
         #      They may be kept, but once any transfer is made (z[g] = 1) the club must go back to 3.
-        excess = {cl: sum(1 for p in owned if club.get(p) == cl) - CLUB_LIMIT for cl in set(club.values())}
         for cl in excess:
             members = gp.quicksum(x[p, g] for p in P if club[p] == cl)
             if excess[cl] > 0:
@@ -162,10 +163,11 @@ def solve(t, P, G, xp, cost, sell, pos, club, squad0, bank0, ft0,
     # decisions for GW t, the first planned GW
     g = G[0]
     on = lambda var: [p for p in P if var[p, g].X > 0.5]
-    bench = [p for p in on(x) if p not in on(y)]
+    squad, lineup = on(x), on(y)
+    bench = [p for p in squad if p not in lineup]
     bench_order = sorted(bench, key=lambda p: (pos[p] != "GK", -xp[p, g]))  # GK first, then by xP
     return {
-        "squad": on(x), "lineup": on(y), "captain": on(c)[0], "bench": bench_order,
+        "squad": squad, "lineup": lineup, "captain": on(c)[0], "bench": bench_order,
         "buys": on(b), "sells": on(s),
         "hits": int(round(h[g].X)), "free_used": int(round(u[g].X)),
         "bank": bank[g].X, "runtime": m.Runtime,

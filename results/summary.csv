@@ -1,5 +1,5 @@
-strategy,total_points,transfers,hits,captain_pts
-no_transfers,1459,0,0,155
-crowd,2000,41,0,159
-milp_H3,1968,56,15,190
-perfect_H3,4852,245,204,653
+strategy,total_points,transfers,hits
+no_transfers,1459,0,0
+crowd,2000,41,0
+milp_H3,1968,56,15
+perfect_H3,4852,245,204

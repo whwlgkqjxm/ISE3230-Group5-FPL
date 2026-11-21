@@ -302,10 +302,14 @@ for i, g in enumerate(G):
 
 ### 4.4 Squad composition and club limit, constraints (4), (5), (12)
 
-`excess[cl]` is $`e_c`$. For a normal club the limit is 3; for a club above the limit, $`z_g`$ is created
+`excess[cl]` is $`e_c`$. It depends only on the current squad, so it is computed once, before the loop
+over the planned GWs. For a normal club the limit is 3; for a club above the limit, $`z_g`$ is created
 and linked to the number of transfers.
 
 ```python
+# squad players above the club limit, per club (> 0 only after a real-life transfer, see (12))
+excess = {cl: sum(1 for p in owned if club.get(p) == cl) - CLUB_LIMIT for cl in set(club.values())}
+
 # (4) 15 players: 2 GK, 5 DEF, 5 MID, 3 FWD
 m.addConstr(x.sum("*", g) == 15, name=f"squad15_{g}")
 for k, q in QUOTA.items():
@@ -313,7 +317,6 @@ for k, q in QUOTA.items():
 # (5) at most 3 players from one club
 # (12) excess[cl] > 0 when a real-life transfer left more than 3 squad players at a club.
 #      They may be kept, but once any transfer is made (z[g] = 1) the club must go back to 3.
-excess = {cl: sum(1 for p in owned if club.get(p) == cl) - CLUB_LIMIT for cl in set(club.values())}
 for cl in excess:
     members = gp.quicksum(x[p, g] for p in P if club[p] == cl)
     if excess[cl] > 0:
@@ -498,20 +501,19 @@ it did. Every week's team and transfers are listed in
 
 Every strategy plays all 38 GWs and is scored with the real points (`results/summary.csv`).
 
-| Strategy | Description | Season points | Transfers | Hits | Captain points (before doubling) |
-|---|---|---|---|---|---|
-| No transfers | picks the best GW1 squad and never changes it | 1,459 | 0 | 0 | 155 |
-| **Our model** | **plans 3 GWs ahead** | **1,968** | 56 | 15 | 190 |
-| Follow the crowd | copies the players most FPL managers own, using free transfers only | 2,000 | 41 | 0 | 159 |
-| Perfect information (not possible in reality) | Same MILP, but uses the real points of the next 3 GWs instead of expected points | 4,852 | 245 | 204 | 653 |
+| Strategy | Description | Season points | Transfers | Hits |
+|---|---|---|---|---|
+| No transfers | picks the best GW1 squad and never changes it | 1,459 | 0 | 0 |
+| **Our model** | **plans 3 GWs ahead** | **1,968** | 56 | 15 |
+| Follow the crowd | copies the players most FPL managers own, using free transfers only | 2,000 | 41 | 0 |
+| Perfect information (not possible in reality) | Same MILP, but uses the real points of the next 3 GWs instead of expected points | 4,852 | 245 | 204 |
 
 ![Cumulative points](results/figures/fig1_cumulative_points.png)
 
 - **Transfers matter.** Never transferring scores 509 points less than our model.
 - **Follow the crowd is 32 points ahead.** Before hit penalties our model scores 2,028
   (1,968 + 15 × 4), more than the crowd's 2,000. The difference comes from the 15 hits our model takes.
-  Our model's captains score more (190 vs 159). Ownership may also reflect news our forecast doesn't
-  use, such as injuries and team selection.
+  Ownership may also reflect news our forecast doesn't use, such as injuries and team selection.
 - **Perfect information is not achievable.** It shows the score if the next 3 GWs were known
   exactly. The large gap (4,852 vs 1,968) means the limit is the forecast, not the optimization.
 

@@ -23,7 +23,7 @@ FIG = RES / "figures"
 
 # ---- chart style ----
 SURFACE, INK, MUTED, GRID = "#fcfcfb", "#1f1f1e", "#6b6a63", "#e4e3de"
-SERIES = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100"]   # line colors, in this order
+SERIES = ["#2a78d6", "#eb6834", "#1baf7a"]   # line colors, in this order
 plt.rcParams.update({
     "figure.facecolor": SURFACE, "axes.facecolor": SURFACE, "savefig.facecolor": SURFACE,
     "axes.edgecolor": GRID, "axes.labelcolor": MUTED, "xtick.color": MUTED, "ytick.color": MUTED,
@@ -150,11 +150,10 @@ def plot_horizon(tab, main_h=3):
 
 if __name__ == "__main__":
     parts = [a.upper() for a in sys.argv[1:]] or list("AB")
-    df, xp = load()
-    RES.mkdir(exist_ok=True)
     for p in parts:
         print(f"\n=== part {p} ===")
         if p == "A":
             season_table()
             part_a()
-        if p == "B": part_b(df, xp)
+        if p == "B":
+            part_b(*load())
