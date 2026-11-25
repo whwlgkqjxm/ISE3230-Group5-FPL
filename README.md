@@ -62,7 +62,7 @@ For every candidate player *p* and every planned gameweek *g* (the sets are defi
 | $`u_g`$ | $`\{0, 1, 2, \dots\}`$ | free transfers used in GW *g* (integer) |
 | $`h_g`$ | $`\{0, 1, 2, \dots\}`$ | number of hits in GW *g* (integer). A hit is a transfer made after the free transfers are used up. Each hit costs 4 points. |
 | $`bank_g`$ | $`[0, \infty)`$ | money left after the GW-*g* transfers (£m) |
-| $`z_g`$ | $`\{0, 1\}`$ | 1 if any transfer is made in GW *g*. Only needed when a real-life transfer (one of our players moving to another Premier League club during the season) leaves us with more than 3 players from one club (constraint 12) |
+| $`z_g`$ | $`\{0, 1\}`$ | 1 if any transfer is made in GW *g*. Only needed when a real-life transfer (a squad player moving to another Premier League club during the season) leaves the squad with more than 3 players from one club (constraint 12)
 
 The 4 squad players who don't start are the bench. A bench player comes on when a starter doesn't
 play, as long as the team still has a valid formation. The vice-captain gets double points if the
