@@ -3,7 +3,7 @@ baselines.py
 ------------
 Step 5 of 6: compare the main model with other strategies.
 Every strategy uses the same MILP and is scored the same way (simulate.py, real points,
-FPL rules). Only what the MILP maximizes, or which transfers are allowed, is different.
+FPL rules). Only what the MILP maximizes, how many GWs it plans, or which transfers are allowed is different.
 
   1. no_transfers   picks the GW1 squad by planning 10 GWs ahead and never transfers;
                     only the starting XI and the captain change each GW

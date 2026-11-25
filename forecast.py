@@ -4,7 +4,7 @@ forecast.py
 Step 2 of 6: expected points (xP) of every player.
 
 At the deadline of GW t, only data from GW 1..t-1 is used.
-For each planned GW g = t, t+1, ..., t+H-1:
+For each GW g = t, t+1, ..., t+9 (HORIZON = 10, up to GW38; the MILP uses the first H of them):
 
     xP[p, g] = P(play)[p, t]  *  PPA[p, t]  *  n_fixtures[club of p, g]
 

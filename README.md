@@ -15,7 +15,7 @@ playing in the 2025-26 season. The managers at the top of the overall ranking wi
 champion even gets a seven-night trip to the UK with VIP tickets to two Premier League matches.
 Getting close to that level takes good decisions every week. Each week a manager has to choose which
 11 players to start from their 15-player squad and who will be captain for double points. They also
-need to decide whether a transfer is worth losing 4 points. This might sound simple, but there are
+need to decide whether an extra transfer beyond the free ones is worth losing 4 points. This might sound simple, but there are
 about 700 players to choose from, which means there are roughly $`10^{28}`$ possible squads that fit
 the £100m budget. A player bought this week also stays in the team for the next weeks, so every
 decision affects the future. All of these choices have to be made before the matches start. Because
@@ -49,7 +49,7 @@ analysis, we change *H* from 1 to 10 and check how the season points change.
 
 ## 2. Decision Variables
 
-For every candidate player *p* and every planned gameweek *g* (the sets are defined in Section 3.1):
+Each variable is defined for every planned gameweek *g*, and the first five also for every candidate player *p* (the sets are defined in Section 3.1):
 
 | Variable | Domain | Meaning |
 |---|---|---|
@@ -202,7 +202,7 @@ xP_{p,g} \;=\; P(\text{play})_{p} \times \text{PPA}_{p} \times n_{\text{club}(p)
 - PPA: points per match played over the last 6 GWs
 - $`n`$: number of matches his club plays in GW *g* as scheduled at the deadline (0, 1 or 2)
 - Both values are also mixed with last season's numbers, which matters most early in the season when
-  there is little data. Players with no Premier League history get a value estimated from their price.
+  there is little data. Players who were not in the Premier League last season get a value estimated from their price.
 
 $`P(\text{play})`$ and PPA are computed once at the deadline, so every planned GW uses the same two
 values. Only $`n`$ changes from week to week.
@@ -398,7 +398,7 @@ m.Params.TimeLimit = time_limit
 m.Params.MIPGap = 1e-4
 ```
 
-In every run in this report, every weekly model stopped because of the 0.01 % gap and never because of
+In every run here, every weekly model stopped because of the 0.01 % gap and never because of
 the time limit, so every weekly decision is optimal for its model (column `optimal` in
 `results/season_*.csv`).
 
@@ -488,14 +488,14 @@ it did. Every week's team and transfers are listed in
 | Hits | 15 (−60 points), in 11 different GWs |
 | Free transfers | always used, never saved. The 5 free transfers given in GW16 were all used that week |
 | Captain | 16 different players. Haaland 7 times, Salah 6 times |
-| Expected vs real points of the starting XI | 2,469 expected, 2,028 real (hit penalties not included in either) |
+| Expected vs real points | 2,469 expected for the starting XI, 2,028 real for the team including automatic substitutions (hit penalties not included in either) |
 | Solve time | 0.1–1.3 s per GW. Every GW was solved to optimality |
 
 - In GW1 the model spent the whole £100m. It took 3 players each from Liverpool and Nott'm Forest,
   the most the rules allow.
-- It filled the bench with the cheapest players (£4.0–4.5m) and spent the money on the starting XI,
+- In GW1 it also filled the bench with the cheapest players (£4.0–4.5m) and spent the money on the starting XI,
   because bench players count only 10 % in the objective.
-- Its starting XI scored 18 % less than expected (2,028 vs 2,469), so the forecast is too optimistic.
+- The team's real points were 18 % below the expected points of the starting XI (2,028 vs 2,469), so the forecast is too optimistic.
 
 ### 5.2 Strategy comparison
 
@@ -506,7 +506,7 @@ Every strategy plays all 38 GWs and is scored with the real points (`results/sum
 | No transfers | picks the best GW1 squad and never changes it | 1,459 | 0 | 0 |
 | **Our model** | **plans 3 GWs ahead** | **1,968** | 56 | 15 |
 | Follow the crowd | copies the players most FPL managers own, using free transfers only | 2,000 | 41 | 0 |
-| Perfect information (not possible in reality) | Same MILP, but uses the real points of the next 3 GWs instead of expected points | 4,852 | 245 | 204 |
+| Perfect information (not possible in reality) | same MILP, but uses the real points of the next 3 GWs instead of expected points | 4,852 | 245 | 204 |
 
 ![Cumulative points](results/figures/fig1_cumulative_points.png)
 
