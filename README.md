@@ -79,16 +79,16 @@ with the second-highest expected points, and the bench is ordered GK first, then
 | Symbol | Meaning |
 |---|---|
 | $`P`$ | candidate players: all players in the game at the current GW (690 at GW1, up to 841 later) |
-| $`G = \{t, \dots, \min(t+H-1,\ 38)\}`$ | planned GWs. *t* is the current GW and *H* is the number of GWs planned ahead (3 in our model). The plan stops at GW38 |
+| $`G = \{t, \dots, \min(t+H-1,\ 38)\}`$ | planned GWs. *t* is the current GW and *H* is the number of GWs planned ahead (3 in the main model). The plan stops at GW38 |
 | $`P_k,\ k \in \{\text{GK}, \text{DEF}, \text{MID}, \text{FWD}\}`$ | players of position *k* |
 | $`P_c,\ c \in C`$ | players of club *c*, where *C* is the set of the 20 Premier League clubs |
 | $`xP_{p,g}`$ | expected points of *p* in GW *g*  |
 | $`cost_p`$ | price of *p* at GW *t* (£m), kept fixed for all planned weeks |
-| $`sell_p`$ | selling price of an owned player: purchase price + half of any price rise, rounded down to £0.1m, or the current price if the price has fallen (FPL rule). Equal to $`cost_p`$ for players we don't own |
+| $`sell_p`$ | selling price of an owned player: purchase price + half of any price rise, rounded down to £0.1m, or the current price if the price has fallen (FPL rule). Equal to cost_p for players not in the squad |
 | $`q_k`$ | squad quota: 2, 5, 5, 3 |
 | $`L_k, \; U_k`$ | formation limits in the XI: GK 1–1, DEF 3–5, MID 2–5, FWD 1–3 |
 | $`S_0, \; B_0, \; F_0`$ | state at the deadline of GW *t*: current squad, bank, free transfers |
-| $`e_c = \lvert S_0 \cap P_c \rvert - 3`$ | number of our players at club *c* above 3 (only > 0 after a real-life transfer) |
+| $`e_c = \lvert S_0 \cap P_c \rvert - 3`$ | number of squad players at club c above 3 (only > 0 after a real-life transfer) |
 | $`\delta = 0.9, \; \beta = 0.1, \; \kappa = 4`$ | weekly discount, bench weight, hit cost |
 
 The previous-week values for the first planned week come from the state:
