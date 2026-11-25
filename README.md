@@ -84,7 +84,7 @@ with the second-highest expected points, and the bench is ordered GK first, then
 | $`P_c,\ c \in C`$ | players of club *c*, where *C* is the set of the 20 Premier League clubs |
 | $`xP_{p,g}`$ | expected points of *p* in GW *g*  |
 | $`cost_p`$ | price of *p* at GW *t* (£m), kept fixed for all planned weeks |
-| $`sell_p`$ | selling price of an owned player: purchase price + half of any price rise, rounded down to £0.1m, or the current price if the price has fallen (FPL rule). Equal to cost_p for players not in the squad |
+| $`sell_p`$ | selling price of an owned player: purchase price + half of any price rise, rounded down to £0.1m, or the current price if the price has fallen (FPL rule). Equal to $`cost_p`$ for players not in the squad |
 | $`q_k`$ | squad quota: 2, 5, 5, 3 |
 | $`L_k, \; U_k`$ | formation limits in the XI: GK 1–1, DEF 3–5, MID 2–5, FWD 1–3 |
 | $`S_0, \; B_0, \; F_0`$ | state at the deadline of GW *t*: current squad, bank, free transfers |
