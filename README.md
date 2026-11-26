@@ -15,8 +15,8 @@ playing in the 2025-26 season. The managers at the top of the overall ranking wi
 champion even gets a seven-night trip to the UK with VIP tickets to two Premier League matches.
 Getting close to that level takes good decisions every week. Each week a manager has to choose which
 11 players to start from their 15-player squad and who will be captain for double points. They also
-need to decide which players to buy and sell, since making too many transfers costs points. This might sound simple, but there are
-about 700 players to choose from, which means there are roughly $`10^{28}`$ possible squads that fit
+need to decide which players to buy and sell, since making too many transfers costs points. This might sound simple, but with
+about 700 players to choose from, there are roughly $`10^{28}`$ possible squads that fit
 the £100m budget. A player bought this week also stays in the team for the next weeks, so every
 decision affects the future. All of these choices have to be made before the matches start. So we
 wanted to see if a math model could make these decisions and help a manager climb closer
@@ -54,8 +54,8 @@ Each variable is defined for every planned gameweek *g*, and the first five also
 | Variable | Domain | Meaning |
 |---|---|---|
 | $`x_{p,g}`$ | $`\{0, 1\}`$ | 1 if player *p* is in the 15-player squad in GW *g* |
-| $`y_{p,g}`$ | $`\{0, 1\}`$ | 1 if *p* is in the starting XI |
-| $`c_{p,g}`$ | $`\{0, 1\}`$ | 1 if *p* is captain |
+| $`y_{p,g}`$ | $`\{0, 1\}`$ | 1 if *p* is in the starting XI in GW *g* |
+| $`c_{p,g}`$ | $`\{0, 1\}`$ | 1 if *p* is captain in GW *g* |
 | $`b_{p,g}`$ | $`\{0, 1\}`$ | 1 if *p* is bought before GW *g* |
 | $`s_{p,g}`$ | $`\{0, 1\}`$ | 1 if *p* is sold before GW *g* |
 | $`ft_g`$ | $`\{0, 1, \dots, 5\}`$ | free transfers available in GW *g* |
@@ -101,7 +101,7 @@ $`x_{p,t-1} = 1`$ if $`p \in S_0`$ (else 0) and $`bank_{t-1} = B_0`$.
 \;+\; \beta \sum_{p \in P} xP_{p,g}\,(x_{p,g} - y_{p,g}) \;-\; \kappa\, h_g \Big]
 ```
 
-- $`xP\,(y + c)`$: points of the starting XI; the captain is counted once more, so he scores double
+- $`xP\,(y + c)`$: expected points of the starting XI; the captain is counted once more, so he scores double
 - $`\beta\,xP\,(x - y)`$: a small value for bench players, who come on when a starter doesn't play
 - $`\kappa\,h`$: 4 points for every hit
 - $`\delta^{g-t}`$: the *H* planned GWs are added up, and later weeks count slightly less because their
@@ -181,7 +181,7 @@ In GW1 constraints (9)–(11) do not apply; instead $`u = h = ft = 0`$ and nothi
 
 - In (11) the real rule is $`ft_g = \min(5,\ ft_{g-1} - u_{g-1} + 1)`$. Writing "≤" together with the
   upper bound 5 gives the same optimal value, because having more free transfers never lowers the objective.
-- **Model size:** for GW1 with H = 3 there are 690 candidates, **10,362 variables and 10,467
+- **Model size:** for GW1 with *H* = 3 there are 690 candidates, **10,362 variables and 10,467
   constraints**.
 
 ### 3.4 Where the expected points $`xP`$ come from
@@ -381,7 +381,7 @@ else:
 
 ### 4.7 Objective and solve (Section 3.2)
 
-`discount ** i` is $`\delta^{g-t}`$, `bench_w` is $`\beta`$, `hit_cost` is $`\kappa`$.
+`discount ** i` is $`\delta^{g-t}`$ (*i* = *g* − *t* is the position of *g* in the plan), `bench_w` is $`\beta`$, `hit_cost` is $`\kappa`$.
 
 ```python
 obj = gp.LinExpr()
@@ -538,11 +538,11 @@ has a larger objective. We compare the real season points instead.
 
 - **Planning 5 GWs ahead scores the most**, 2,010 points. That is 42 more than our model and 10 more than
   following the crowd.
-- **A longer plan is not always better.** After H = 5 the points drop to 1,919 and then go up and down.
-  The curve is not smooth, so part of the differences between values of H is likely noise from one
+- **A longer plan is not always better.** After *H* = 5 the points drop to 1,919 and then go up and down.
+  The curve is not smooth, so part of the differences between values of *H* is likely noise from one
   season.
-- **Longer plans take more hits and more time.** Hits rise from 7 at H = 1 to 20–26 for H ≥ 5. At
-  H = 10 the slowest week takes 56 s, but every week was still solved to optimality.
+- **Longer plans take more hits and more time.** Hits rise from 7 at *H* = 1 to 20–26 for *H* ≥ 5. At
+  *H* = 10 the slowest week takes 56 s, but every week was still solved to optimality.
 
 ### 5.4 Conclusion and limitations
 
@@ -554,7 +554,8 @@ shows that a better forecast would help more than a different number of planned 
 Limitations:
 
 - **No chips** (Wildcard, Free Hit, Bench Boost, Triple Captain), which real managers use for extra points.
-- **Simple forecast** from past points and minutes only: no injury news, team news or opponent strength.
+- **Simple forecast** from past points, minutes and fixtures only (and price for players new to the
+  league): no injury news, team news or opponent strength.
 - **Prices are fixed** within the planning window. Real price changes are applied week to week.
 - The discount (0.9) and bench weight (0.1) were set by judgment, not tuned.
 - **Planning 5 GWs ahead was found best on the same season it is scored on**, so its 2,010 points may
