@@ -15,7 +15,7 @@ playing in the 2025-26 season. The managers at the top of the overall ranking wi
 champion even gets a seven-night trip to the UK with VIP tickets to two Premier League matches.
 Getting close to that level takes good decisions every week. Each week a manager has to choose which
 11 players to start from their 15-player squad and who will be captain for double points. They also
-need to decide whether an extra transfer beyond the free ones is worth losing 4 points. This might sound simple, but there are
+need to decide which players to buy and sell, since making too many transfers costs points. This might sound simple, but there are
 about 700 players to choose from, which means there are roughly $`10^{28}`$ possible squads that fit
 the £100m budget. A player bought this week also stays in the team for the next weeks, so every
 decision affects the future. All of these choices have to be made before the matches start. Because
@@ -59,8 +59,8 @@ Each variable is defined for every planned gameweek *g*, and the first five also
 | $`b_{p,g}`$ | $`\{0, 1\}`$ | 1 if *p* is bought before GW *g* |
 | $`s_{p,g}`$ | $`\{0, 1\}`$ | 1 if *p* is sold before GW *g* |
 | $`ft_g`$ | $`\{0, 1, \dots, 5\}`$ | free transfers available in GW *g* |
-| $`u_g`$ | $`\{0, 1, 2, \dots\}`$ | free transfers used in GW *g* (integer) |
-| $`h_g`$ | $`\{0, 1, 2, \dots\}`$ | number of hits in GW *g* (integer). A hit is a transfer made after the free transfers are used up. Each hit costs 4 points. |
+| $`u_g`$ | $`\{0, 1, 2, \dots\}`$ | free transfers used in GW *g* |
+| $`h_g`$ | $`\{0, 1, 2, \dots\}`$ | number of hits in GW *g* (4 points each) |
 | $`bank_g`$ | $`[0, \infty)`$ | money left after the GW-*g* transfers (£m) |
 | $`z_g`$ | $`\{0, 1\}`$ | 1 if any transfer is made in GW *g*. Only needed when a real-life transfer (a squad player moving to another Premier League club during the season) leaves the squad with more than 3 players from one club (constraint 12)
 
@@ -179,8 +179,8 @@ In GW1 constraints (9)–(11) do not apply; instead $`u = h = ft = 0`$ and nothi
 
 **Remarks.**
 
-- In (11) the real rule is an equality. "≤" gives the same optimal value, because having more free
-  transfers never lowers the objective.
+- In (11) the real rule is $`ft_g = \min(5,\ ft_{g-1} - u_{g-1} + 1)`$. Writing "≤" together with the
+  upper bound 5 gives the same optimal value, because having more free transfers never lowers the objective.
 - **Model size:** for GW1 with H = 3 there are 690 candidates, **10,362 variables and 10,467
   constraints**.
 
@@ -241,6 +241,7 @@ Points per match played (PPA) and the chance to play are each mixed with last se
 `p_sum` and `a_sum` are a player's points and matches played over the last 6 GWs. `num` and `den` are
 the matches he played and the matches he could have played over the last 4 GWs, with recent GWs
 weighted more. `nf` is the number of matches his club plays in GW *g*, so `rate * nf` is $`xP`$.
+`horizon` is 10, so at each deadline $`xP`$ is computed for up to 10 GWs, and the MILP uses the first *H*.
 
 ```python
 ppa = (p_sum + k * prior["ppa"]) / (a_sum + k)
@@ -492,9 +493,8 @@ it did. Every week's team and transfers are listed in
 | Solve time | 0.1–1.3 s per GW. Every GW was solved to optimality |
 
 - In GW1 the model spent the whole £100m. It took 3 players each from Liverpool and Nott'm Forest,
-  the most the rules allow.
-- In GW1 it also filled the bench with the cheapest players (£4.0–4.5m) and spent the money on the starting XI,
-  because bench players count only 10 % in the objective.
+  the most the rules allow, and filled the bench with the cheapest players (£4.0–4.5m), because
+  bench players count only 10 % in the objective.
 - The team's real points were 18 % below the expected points of the starting XI (2,028 vs 2,469), so the forecast is too optimistic.
 
 ### 5.2 Strategy comparison
