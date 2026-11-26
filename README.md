@@ -18,12 +18,12 @@ Getting close to that level takes good decisions every week. Each week a manager
 need to decide which players to buy and sell, since making too many transfers costs points. This might sound simple, but there are
 about 700 players to choose from, which means there are roughly $`10^{28}`$ possible squads that fit
 the £100m budget. A player bought this week also stays in the team for the next weeks, so every
-decision affects the future. All of these choices have to be made before the matches start. Because
-of this, we wanted to see if a math model could make these decisions and help a manager climb closer
+decision affects the future. All of these choices have to be made before the matches start. So we
+wanted to see if a math model could make these decisions and help a manager climb closer
 to the top, using only the data available before each deadline.
 
 Each manager starts with a £100m budget for the 15-player squad, which must have 2 goalkeepers,
-5 defenders, 5 midfielders and 3 forwards, with at most 3 players from one club. The 11 starters must
+5 defenders, 5 midfielders and 3 forwards, with at most 3 players from one club. The 11 starters (the starting XI) must
 form a valid formation, with exactly 1 goalkeeper and at least 3 defenders, 2 midfielders and
 1 forward. There are 38 gameweeks (GWs) in a season. Each GW gives one free transfer that
 can be saved up to 5. Any transfer beyond the free ones costs 4 points, which is called a hit.
@@ -32,7 +32,7 @@ can be saved up to 5. Any transfer beyond the free ones costs 4 points, which is
 We use a rolling horizon. At the deadline of every GW *t*, we
 
 1. forecast the expected points of every player for the next *H* GWs (*t … t+H−1*), using only data up to GW *t−1*
-2. solve the MILP for those *H* weeks
+2. solve the MILP for those *H* GWs
 3. carry out only the GW-*t* decisions (squad, starting XI, captain, transfers)
 4. score them with the real GW-*t* points, then move to GW *t+1*
 
@@ -53,7 +53,7 @@ Each variable is defined for every planned gameweek *g*, and the first five also
 
 | Variable | Domain | Meaning |
 |---|---|---|
-| $`x_{p,g}`$ | $`\{0, 1\}`$ | 1 if player *p* is in the 15-man squad in GW *g* |
+| $`x_{p,g}`$ | $`\{0, 1\}`$ | 1 if player *p* is in the 15-player squad in GW *g* |
 | $`y_{p,g}`$ | $`\{0, 1\}`$ | 1 if *p* is in the starting XI |
 | $`c_{p,g}`$ | $`\{0, 1\}`$ | 1 if *p* is captain |
 | $`b_{p,g}`$ | $`\{0, 1\}`$ | 1 if *p* is bought before GW *g* |
@@ -66,9 +66,9 @@ Each variable is defined for every planned gameweek *g*, and the first five also
 
 The 4 squad players who don't start are the bench. A bench player comes on when a starter doesn't
 play, as long as the team still has a valid formation. The vice-captain gets double points if the
-captain doesn't play. The vice-captain and the bench order are not variables. After solving, the
-vice-captain is the starter
-with the second-highest expected points, and the bench is ordered GK first, then by expected points.
+captain doesn't play. The vice-captain and the bench order are not variables. After solving, both are set
+from the expected points in the current GW: the vice-captain is the starter with the second-highest
+value, and the bench is ordered GK first, then from highest to lowest.
 
 ---
 
@@ -79,7 +79,7 @@ with the second-highest expected points, and the bench is ordered GK first, then
 | Symbol | Meaning |
 |---|---|
 | $`P`$ | candidate players: all players in the game at the current GW (690 at GW1, up to 841 later) |
-| $`G = \{t, \dots, \min(t+H-1,\ 38)\}`$ | planned GWs. *t* is the current GW and *H* is the number of GWs planned ahead (3 in the main model). The plan stops at GW38 |
+| $`G = \{t, \dots, \min(t+H-1,\ 38)\}`$ | planned GWs. *t* is the current GW and *H* is the number of GWs planned ahead (3 in our model). The plan stops at GW38 |
 | $`P_k,\ k \in \{\text{GK}, \text{DEF}, \text{MID}, \text{FWD}\}`$ | players of position *k* |
 | $`P_c,\ c \in C`$ | players of club *c*, where *C* is the set of the 20 Premier League clubs |
 | $`xP_{p,g}`$ | expected points of *p* in GW *g*  |
@@ -88,7 +88,7 @@ with the second-highest expected points, and the bench is ordered GK first, then
 | $`q_k`$ | squad quota: 2, 5, 5, 3 |
 | $`L_k, \; U_k`$ | formation limits in the XI: GK 1–1, DEF 3–5, MID 2–5, FWD 1–3 |
 | $`S_0, \; B_0, \; F_0`$ | state at the deadline of GW *t*: current squad, bank, free transfers |
-| $`e_c = \lvert S_0 \cap P_c \rvert - 3`$ | number of squad players at club c above 3 (only > 0 after a real-life transfer) |
+| $`e_c = \lvert S_0 \cap P_c \rvert - 3`$ | number of squad players at club *c* above 3 (only > 0 after a real-life transfer) |
 | $`\delta = 0.9, \; \beta = 0.1, \; \kappa = 4`$ | weekly discount, bench weight, hit cost |
 
 The previous-week values for the first planned week come from the state:
@@ -173,7 +173,7 @@ ft_t = F_0, \qquad ft_g \le ft_{g-1} - u_{g-1} + 1 \;\; (g > t,\ g \ne 16), \qqu
 | (11) | unused free transfers roll over (+1 per week, max 5). FPL gave every manager 5 free transfers in GW16 of 2025-26, so $`ft_{16} = 5`$ |
 | (12) | FPL rule: if a real-life transfer leaves us with more than 3 players from one club we may keep them, but any transfer we make must bring that club back to 3. $`z_g`$ switches the looser limit off once a transfer is made |
 
-**GW1.** The squad is picked from scratch, so $`S_0`$ is empty (no players yet) and $`B_0 = 100`$.
+**GW1.** The squad is picked from scratch, so $`S_0`$ is empty and $`B_0 = 100`$.
 In GW1 constraints (9)–(11) do not apply; instead $`u = h = ft = 0`$ and nothing is sold, so the 15
 "bought" players are the initial squad. GW2 then starts with 1 free transfer.
 
@@ -190,6 +190,9 @@ In GW1 constraints (9)–(11) do not apply; instead $`u = h = ft = 0`$ and nothi
 (points, prices, minutes, clubs and fixtures of 841 players over 38 GWs), plus last season (2024-25)
 totals. No synthetic data. `data_prep.py` cleans it into one row per player
 and GW; in double GWs (two matches) the points are summed, and in blank GWs (no match) they are 0.
+`data/raw/fixture_changes.csv` lists the 5 matches that were moved during the season, with the dates
+the changes were announced and a source link for each, so the forecast at each deadline uses only the
+schedule known at that time.
 
 **Forecast** (`forecast.py`). At the deadline of GW *t*, using only data up to GW *t−1*:
 
@@ -197,12 +200,13 @@ and GW; in double GWs (two matches) the points are summed, and in blank GWs (no 
 xP_{p,g} \;=\; P(\text{play})_{p} \times \text{PPA}_{p} \times n_{\text{club}(p),\,g}
 ```
 
-- $`P(\text{play})`$: share of his club's matches in the last 4 GWs that he played in, with recent GWs
-  weighted more
+- $`P(\text{play})`$: share of his club's matches in the last 4 GWs that he played in, with each GW
+  counting half as much as the GW after it
 - PPA: points per match played over the last 6 GWs
 - $`n`$: number of matches his club plays in GW *g* as scheduled at the deadline (0, 1 or 2)
-- Both values are also mixed with last season's numbers, which matters most early in the season when
-  there is little data. Players who were not in the Premier League last season get a value estimated from their price.
+- $`P(\text{play})`$ and PPA are also mixed with last season's numbers, which matters most early in the
+  season when there is little data. Players who were not in the Premier League last season get these
+  numbers estimated from their price.
 
 $`P(\text{play})`$ and PPA are computed once at the deadline, so every planned GW uses the same two
 values. Only $`n`$ changes from week to week.
@@ -444,8 +448,8 @@ for t in range(1, N_GW + 1):
 All strategies use the same simulation and scoring. They differ only in what the model is given.
 "No transfers" allows no transfers after GW1 and picks its GW1 squad by looking 10 GWs ahead, the
 longest forecast we have. "Follow the crowd" replaces $`xP`$ with ownership (how many FPL managers have
-the player in their team) and allows free transfers only (a hit cost of 1,000 in the plan).
-"Perfect information" replaces $`xP`$ with the real points.
+the player in their team), plans 1 GW ahead and allows free transfers only (a hit cost of 1,000 in the plan).
+"Perfect information" replaces $`xP`$ with the real points and plans 3 GWs ahead, like our model.
 
 ```python
 logs["no_transfers"] = S.run_season(df, xp, "no_transfers", horizon=hold_horizon, max_transfers=0,
@@ -582,7 +586,7 @@ python analysis.py A   # (or only one part: A or B)
 ├── model.py            # Step 3  MILP (gurobipy)
 ├── simulate.py         # Step 4  rolling-horizon season simulation + FPL scoring
 ├── baselines.py        # Step 5  comparison strategies
-├── analysis.py         # Step 6  post-optimality analysis + figures
+├── analysis.py         # Step 6  decision table, figures, post-optimality analysis
 ├── data/
 │   ├── raw/            # original files from vaastav/Fantasy-Premier-League + fixture_changes.csv
 │   └── processed/      # player_gw.csv, fixtures_known.csv, xp.csv
